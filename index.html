@@ -100,6 +100,12 @@ textarea{min-height:70px;resize:vertical}
 .cab{display:flex;align-items:center;gap:8px;margin-top:6px;padding-left:14px;font-size:14px;color:var(--mute)}
 .cab .seg button{min-height:34px;min-width:44px;font-size:13px}
 .off{opacity:.45;pointer-events:none}
+.invr{display:block;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--line);padding:10px 2px;position:relative}
+.invr:last-child{border-bottom:0}.invr b{display:block;padding-right:48px}.invr span{display:block;font-size:13px}.invr .mono{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--mute)}
+.invr .q{position:absolute;right:4px;top:10px;font-weight:800;font-size:16px;color:var(--pri)}.invr .src{font-size:11px;color:var(--mute);margin-top:2px}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:8px}.g2 input{margin-top:2px}
+.sug{display:flex;flex-direction:column;gap:4px;margin-top:4px}.sug button{text-align:left;border:1px solid var(--line);background:var(--pri2);border-radius:10px;padding:8px 10px;font-size:14px}.sug span{color:var(--mute);font-size:12px}
+.sheet label{display:block;margin-top:8px}
 .sech{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}.sech .sec{margin-bottom:0}
 .it.nn .lb{color:var(--mute);font-weight:500}
 .ctl .v.need{background:var(--pri2);border-color:var(--pri);color:var(--pri)}.ctl .v.need.own{background:var(--pri);color:#fff}
@@ -162,7 +168,7 @@ tr:hover td{background:var(--pri2)}
 <input type="file" id="fImp" accept=".zip,application/zip,application/x-zip-compressed" multiple hidden>
 <script>
 {
-const APP_VER = '1.2';
+const APP_VER = '1.3';
 // ---------------- чек-лист ----------------
 const TUZ = [
  ['T_exist','Наличие ТУЗ',1,1],['T_power','Питание в блоке',1,1],['T_cab','Шкаф управления (ШУ)',1,1],['T_mast','Мачта',1,1],
@@ -282,13 +288,13 @@ async function load(){
 const blockList = () => [...S.blocks.values()].sort((a,b)=>a.n-b.n);
 
 // ---------------- роутинг ----------------
-function route(){ const h=decodeURIComponent(location.hash.slice(1)); if(h.startsWith('b-')) return {v:'block', id:h.slice(2)}; return {v:h||'home'}; }
+function route(){ const h=decodeURIComponent(location.hash.slice(1)); if(h.startsWith('b-')) return {v:'block', id:h.slice(2)}; if(h.startsWith('inv-')) return {v:'inv', id:h.slice(4)}; return {v:h||'home'}; }
 const go = h => { location.hash = h; };
 const wide = () => matchMedia('(min-width:1000px)').matches;
 let lastRoute='';
 function render(){
   const r=route(); const v=$('#view');
-  const rk=location.hash; if (rk!==lastRoute){ lastRoute=rk; S.editNeed=false; requestAnimationFrame(()=>window.scrollTo(0,0)); }
+  const rk=location.hash; if (rk!==lastRoute){ lastRoute=rk; S.editNeed=false; S.invPlace='ТУЗ'; requestAnimationFrame(()=>window.scrollTo(0,0)); }
   closeModal(true);
   $('#bBack').hidden = r.v==='home' || (r.v==='block' && wide());
   if (!S.set.name || !S.blocks.size){ $('#title').textContent='Обход блоков'; v.innerHTML=welcomeHTML(); return; }
@@ -304,6 +310,7 @@ function render(){
   if (r.v==='sync'){ $('#title').textContent='Синхронизация'; v.innerHTML=syncHTML(); return; }
   if (r.v==='settings'){ $('#title').textContent='Настройки'; v.innerHTML=settingsHTML(); updStorage(); return; }
   if (r.v==='table'){ $('#title').textContent='Таблица'; v.innerHTML=tableHTML(); return; }
+  if (r.v==='inv'){ if(!S.blocks.has(r.id)){ go(''); return; } $('#title').textContent='Состав · '+S.blocks.get(r.id).name; v.innerHTML=invHTML(r.id); $('#bBack').hidden=false; return; }
   go('');
 }
 
@@ -325,7 +332,7 @@ function filtered(){
   const q=S.q.trim().toLowerCase().replace(/^бл(ок)?\.?\s*/,'');
   let L=blockList().filter(b=>{
     if (S.zal && String(b.zal)!==S.zal) return false;
-    if (q && !b.id.toLowerCase().includes(q) && !b.name.toLowerCase().includes(q)) return false;
+    if (q && !b.id.toLowerCase().includes(q) && !b.name.toLowerCase().includes(q) && !(q.length>=4 && invItems(b.id).some(it=>norm([iv(it,'name'),iv(it,'model'),iv(it,'art'),iv(it,'sn')].join(' ')).includes(norm(q))))) return false;
     const s=status(b.id).k;
     if (S.filter==='none' && s!=='none') return false;
     if (S.filter==='stale' && s!=='stale') return false;
@@ -437,6 +444,7 @@ function blockHTML(id){
 
   <div class="card ${tn==='да'?'':'off'}" id="turr"><div class="sech"><div class="sec">ТУРР ${tn==='да'?'':'— заполняется, если ШУ в ТУРР необходим'}</div>${tn==='да'?needBtn():''}</div>${tn==='да'?needHint():''}${TURR.map(a=>itemHTML(id,b,a[0])).join('')}</div>
 
+  <div class="card"><button class="btn wide" data-act="inv" data-id="${esc(id)}" style="justify-content:space-between"><span>Состав шкафа</span><span class="mute small">ТУЗ ${invItems(id,'ТУЗ').length} · ТУРР ${invItems(id,'ТУРР').length} поз. ›</span></button></div>
   <div class="card"><div class="sec">РАСХОДОМЕРЫ, НЕ ПОДЛЕЖАЩИЕ АВТОМАТИЗАЦИИ</div>
    ${['fm_tuz','fm_turr'].map((k,i)=>`<div class="fld"><span class="l">${i?'ТУРР':'ТУЗ'}, шт</span><input type="number" inputmode="numeric" data-inp="${k}" data-num="1" data-id="${esc(id)}" value="${esc(fv(id,k)??'')}" style="max-width:100px"></div>`).join('')}</div>
 
@@ -454,7 +462,7 @@ function blockHTML(id){
    <div class="fld"><span class="l">Готов к заливке?</span>${segHTML('set',id,'result',['готов','не готов'],fv(id,'result'),'не готов')}</div>
    <label class="small b" for="rn" style="display:block;margin-top:8px">Что мешает</label><textarea id="rn" data-inp="result_note" data-id="${esc(id)}">${esc(fv(id,'result_note')||'')}</textarea></div>
 
-  <div class="card"><div class="sec">ИСТОРИЯ</div>${historyHTML(id)}</div>`;
+  <div class="card"><div class="sec">ИСТОРИЯ</div><div id="histbox">${historyHTML(id)}</div></div>`;
 }
 function photoTile(p){
   const d=new Date(pdate(p)), yr=d.getFullYear()!==new Date().getFullYear() ? '.'+String(d.getFullYear()).slice(2) : '';
@@ -482,6 +490,7 @@ function refreshBlockParts(id, k){
   if (k && ITEM[k]){ const el=document.getElementById('it-'+k); if(el) el.outerHTML=itemHTML(id,b,k); }
   const sum=$('#sum'); if(sum) sum.innerHTML=summaryHTML(id);
   const lvEl=$('#lastv'); if(lvEl) lvEl.innerHTML=lastvHTML(id);
+  const hb=$('#histbox'); if(hb) hb.innerHTML=historyHTML(id);
   if (wide()){ const old=document.querySelector(`.blk[data-id="${CSS.escape(id)}"]`); if(old) old.outerHTML=cardHTML(b,id); }
 }
 
@@ -638,6 +647,126 @@ async function shareOrSave(blob, name, type, preferShare){
   return true;
 }
 
+// ---------------- состав шкафа ----------------
+const INV_F = ['name','brand','model','art','sn','qty','note','place','del'];
+const LOOK = {'а':'a','в':'b','е':'e','ё':'e','к':'k','м':'m','н':'h','о':'o','р':'p','с':'c','т':'t','у':'y','х':'x'};
+const norm = s => String(s||'').toLowerCase().replace(/[авеёкмнорстух]/g, c=>LOOK[c]).replace(/\?/g,'').replace(/[\s\-_.,\/\\()]+/g,' ').trim();
+function lev(a,b){ if(a===b) return 0; const m=a.length,n=b.length; if(!m||!n) return m||n; let p=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=c; } return p[n]; }
+function invOf(id){ const s=st(id); if(!s.inv) s.inv={}; return s.inv; }
+const iv = (it,k) => it.f[k] ? it.f[k].v : undefined;
+function invItems(id, place){ return Object.values(invOf(id)).filter(it=>!iv(it,'del') && (!place || (iv(it,'place')||'ТУЗ')===place)).sort((a,b)=>a.ct-b.ct); }
+let CAT=null;   // справочник: строится из всех позиций всех блоков
+function catalog(){
+  if (CAT) return CAT;
+  const names=new Map(), brands=new Map(), models=new Map(), arts=new Map(), combos=new Map();
+  const bump=(m,k,v)=>{ if(!v) return; const e=m.get(k); if(e) e.n++; else m.set(k,{v,n:1}); };
+  for (const s of S.st.values()) for (const it of Object.values(s.inv||{})){
+    if (iv(it,'del')) continue; const nm=iv(it,'name'); if(!nm) continue;
+    const br=iv(it,'brand')||'', mo=iv(it,'model')||'', ar=iv(it,'art')||'';
+    bump(names,norm(nm),nm); bump(brands,norm(br),br); bump(models,norm(mo),mo); bump(arts,norm(ar),ar);
+    const ck=[norm(nm),norm(br),norm(mo),norm(ar)].join('|'); const e=combos.get(ck);
+    if(e) e.n++; else combos.set(ck,{name:nm,brand:br,model:mo,art:ar,n:1});
+  }
+  const top = m => [...m.values()].sort((a,b)=>b.n-a.n);
+  CAT={names, brands, models, arts, combos:[...combos.values()].sort((a,b)=>b.n-a.n), topNames:top(names).map(x=>x.v)};
+  return CAT;
+}
+const canon = (map, v) => { const e=map.get(norm(v)); return e ? e.v : v; };
+function nearName(v){ const k=norm(v); if(k.length<4 || catalog().names.has(k)) return null; let best=null, bd=99;
+  for (const [nk,e] of catalog().names){ const d=lev(k,nk); const lim=Math.max(1,Math.floor(Math.max(k.length,nk.length)*0.2)); if(d<=lim && d<bd){ bd=d; best=e.v; } }
+  return best; }
+function setInv(id, iid, data, markVisit){
+  const inv=invOf(id), t=Date.now();
+  let it=inv[iid]; if(!it) it=inv[iid]={id:iid, ct:t, cby:S.set.name, f:{}};
+  for (const k in data){ const cur=it.f[k]; if(!cur || cur.v!==data[k]) it.f[k]={v:data[k], t, by:S.set.name, d:S.set.dev}; }
+  CAT=null; if (markVisit) ensureVisit(id); saveState(id);
+}
+function invHTML(id){
+  const b=S.blocks.get(id), pl=S.invPlace||'ТУЗ', L=invItems(id,pl);
+  const cnt=p=>invItems(id,p).reduce((a,it)=>a+(Number(iv(it,'qty'))||1),0);
+  const quick=catalog().topNames.slice(0,10);
+  return `<div class="card"><div class="sech"><div class="sec">СОСТАВ ШКАФА · ${esc(b.name)}</div><button class="chip" data-act="open" data-id="${esc(id)}">К чек-листу</button></div>
+   <div class="row2" style="margin:6px 0 10px">${['ТУЗ','ТУРР'].map(p=>`<button class="chip ${pl===p?'on':''}" data-act="iplace" data-k="${p}">${p} · ${invItems(id,p).length}</button>`).join('')}</div>
+   <button class="btn pri wide" data-act="iadd" data-id="${esc(id)}">+ Добавить в ${pl}</button>
+   ${quick.length?`<div class="small mute" style="margin:10px 0 4px">Быстро добавить:</div><div class="chips">${quick.map(n=>`<button class="chip" data-act="iquick" data-id="${esc(id)}" data-k="${esc(n)}">${esc(n)}</button>`).join('')}</div>`:''}</div>
+  <div class="card">${L.length ? L.map(it=>{ const q=Number(iv(it,'qty'))||1, src=it.f.name&&it.f.name.t<=1 ? 'обследование '+fmtD(dstr(it.ct)) : esc(iv(it,'name')&&it.f.name.by)+' '+fmtD(dstr(it.f.name.t)).slice(0,5);
+     const l2=[iv(it,'brand'),iv(it,'model')].filter(Boolean).join(' '), l3=[iv(it,'art')?'арт. '+iv(it,'art'):'', iv(it,'sn')?'SN '+iv(it,'sn'):''].filter(Boolean).join(' · ');
+     return `<button class="invr" data-act="iedit" data-id="${esc(id)}" data-k="${esc(it.id)}"><span class="q">×${q}</span><b>${esc(iv(it,'name'))}</b>${l2?`<span>${esc(l2)}</span>`:''}${l3?`<span class="mono">${esc(l3)}</span>`:''}${iv(it,'note')?`<span class="mute">${esc(iv(it,'note'))}</span>`:''}<span class="src">${src}</span></button>`; }).join('')
+   : `<div class="empty" style="padding:16px">В ${pl} пока ничего не записано.<br>Нажмите «Добавить» или скопируйте состав с похожего блока.</div>`}</div>
+  <div class="card"><button class="btn wide" data-act="icopy" data-id="${esc(id)}">Скопировать состав с другого блока</button>
+   <div class="small mute" style="margin-top:6px">Копируются наименования, марки, модели, артикулы и количество (без серийных номеров).</div></div>`;
+}
+function invForm(id, iid, preset){
+  const it = iid ? invOf(id)[iid] : null, g = k => it ? (iv(it,k)??'') : ((preset&&preset[k])??'');
+  const C=catalog(); let qty=Number(g('qty'))||1; let place=g('place')||S.invPlace||'ТУЗ'; let confirmedNew=false;
+  const m=openModal(`<h3>${it?'Изменить':'Новая позиция'}</h3>
+   <label class="small b" for="iName">Наименование *</label><input type="text" id="iName" autocomplete="off" value="${esc(g('name'))}" placeholder="Начните вводить — появятся подсказки">
+   <div id="iSug" class="sug"></div>
+   <div class="g2"><div><label class="small b" for="iBrand">Марка</label><input type="text" id="iBrand" list="dlB" autocomplete="off" value="${esc(g('brand'))}"></div>
+    <div><label class="small b" for="iModel">Модель</label><input type="text" id="iModel" list="dlM" autocomplete="off" value="${esc(g('model'))}"></div>
+    <div><label class="small b" for="iArt">Артикул</label><input type="text" id="iArt" list="dlA" autocomplete="off" value="${esc(g('art'))}"></div>
+    <div><label class="small b" for="iSn">Серийный №</label><input type="text" id="iSn" autocomplete="off" value="${esc(g('sn'))}"></div></div>
+   <div class="fld"><span class="l">Количество</span><div class="ctl"><button data-q="-1" aria-label="Меньше">−</button><button class="v" id="iQty">${qty}</button><button data-q="1" aria-label="Больше">+</button></div></div>
+   <div class="fld"><span class="l">Где</span><div class="seg" id="iPl">${['ТУЗ','ТУРР'].map(p=>`<button class="${place===p?'on':''}" data-pl="${p}">${p}</button>`).join('')}</div></div>
+   <label class="small b" for="iNote">Примечание</label><input type="text" id="iNote" value="${esc(g('note'))}">
+   <div id="iWarn"></div>
+   <div class="row2" style="margin-top:12px">${it?'<button class="btn bad" data-m="del">Удалить</button>':''}<button class="btn" data-m="no" style="flex:1">Отмена</button><button class="btn pri" data-m="ok" style="flex:1">Сохранить</button></div>
+   <datalist id="dlB">${[...C.brands.values()].sort((a,b)=>b.n-a.n).map(x=>`<option value="${esc(x.v)}">`).join('')}</datalist><datalist id="dlM"></datalist><datalist id="dlA"></datalist>`);
+  const $m = s => m.querySelector(s);
+  const fillLists=()=>{ const nk=norm($m('#iName').value), mk=norm($m('#iModel').value);
+    const cs=C.combos.filter(c=>!nk || norm(c.name)===nk);
+    $m('#dlM').innerHTML=[...new Set((cs.length?cs:C.combos).map(c=>c.model).filter(Boolean))].map(v=>`<option value="${esc(v)}">`).join('');
+    const ca=C.combos.filter(c=>(!mk || norm(c.model)===mk) && (!nk || norm(c.name)===nk));
+    $m('#dlA').innerHTML=[...new Set((ca.length?ca:cs).map(c=>c.art).filter(Boolean))].map(v=>`<option value="${esc(v)}">`).join(''); };
+  const sug=()=>{ const q=norm($m('#iName').value); const box=$m('#iSug');
+    if(!q){ box.innerHTML=''; return; }
+    const L=C.combos.filter(c=>norm(c.name+' '+c.brand+' '+c.model+' '+c.art).includes(q)).slice(0,6);
+    box.innerHTML=L.map((c,i)=>`<button data-sug="${i}"><b>${esc(c.name)}</b> <span>${esc([c.brand,c.model].filter(Boolean).join(' '))}${c.art?' · '+esc(c.art):''}</span></button>`).join('');
+    box._list=L; fillLists(); };
+  $m('#iName').addEventListener('input', ()=>{ confirmedNew=false; $m('#iWarn').innerHTML=''; sug(); });
+  $m('#iModel').addEventListener('input', fillLists);
+  fillLists();
+  m.onclick=async e=>{
+    const sb=e.target.closest('[data-sug]'); if(sb){ const c=$m('#iSug')._list[+sb.dataset.sug]; $m('#iName').value=c.name; $m('#iBrand').value=c.brand; $m('#iModel').value=c.model; $m('#iArt').value=c.art; $m('#iSug').innerHTML=''; fillLists(); return; }
+    const qb=e.target.closest('[data-q]'); if(qb){ qty=Math.max(1,Math.min(99,qty+Number(qb.dataset.q))); $m('#iQty').textContent=qty; return; }
+    const pb=e.target.closest('[data-pl]'); if(pb){ place=pb.dataset.pl; m.querySelectorAll('[data-pl]').forEach(x=>x.classList.toggle('on',x===pb)); return; }
+    const w=e.target.closest('[data-w]'); if(w){ if(w.dataset.w==='use') $m('#iName').value=w.dataset.v; else confirmedNew=true; $m('#iWarn').innerHTML=''; fillLists(); return; }
+    const b=e.target.closest('[data-m]'); if(!b){ if(e.target===m){ m.onclick=null; closeModal(); } return; }
+    if (b.dataset.m==='no'){ m.onclick=null; closeModal(); return; }
+    if (b.dataset.m==='del'){ if(await confirmBox('Удалить «'+iv(it,'name')+'»?','Удалить')){ setInv(id,iid,{del:1}); toast('Удалено'); render(); } return; }
+    let name=$m('#iName').value.trim(); if(!name){ toast('Введите наименование'); $m('#iName').focus(); return; }
+    name=canon(C.names,name);
+    const near=!confirmedNew && nearName(name);
+    if (near){ $m('#iWarn').innerHTML=`<div class="short" style="margin-top:10px">Похоже на «<b>${esc(near)}</b>». Это то же самое?
+      <div class="row2" style="margin-top:8px"><button class="btn" data-w="use" data-v="${esc(near)}" style="flex:1">Да, «${esc(near)}»</button><button class="btn" data-w="new" style="flex:1">Нет, новая вещь</button></div></div>`; return; }
+    const data={name, brand:canon(C.brands,$m('#iBrand').value.trim()), model:canon(C.models,$m('#iModel').value.trim()), art:canon(C.arts,$m('#iArt').value.trim()),
+      sn:$m('#iSn').value.trim(), qty, note:$m('#iNote').value.trim(), place, del:0};
+    setInv(id, iid||uid(), data, true); S.invPlace=place; m.onclick=null; closeModal(); toast(it?'Сохранено':'Добавлено'); render();
+  };
+  if(!it && !preset) setTimeout(()=>$m('#iName').focus(),50);
+}
+function invCopy(id){
+  const others=blockList().filter(b=>b.id!==id && invItems(b.id).length);
+  const m=openModal(`<h3>Скопировать состав с блока</h3><input type="search" id="cpQ" placeholder="Номер блока"><div id="cpL" style="max-height:50vh;overflow:auto;margin-top:8px"></div><button class="btn wide" data-m="no" style="margin-top:10px">Отмена</button>`);
+  const draw=()=>{ const q=norm(m.querySelector('#cpQ').value); m.querySelector('#cpL').innerHTML=others.filter(b=>!q||norm(b.id).includes(q)).slice(0,40).map(b=>`<button class="blk" data-cp="${esc(b.id)}" style="padding:8px 12px"><b>${esc(b.name)}</b> <span class="small mute">· ${invItems(b.id).length} поз.</span></button>`).join('')||'<div class="empty">Нет блоков с записанным составом</div>'; };
+  m.querySelector('#cpQ').addEventListener('input',draw); draw();
+  m.onclick=async e=>{ const c=e.target.closest('[data-cp]'); const b=e.target.closest('[data-m]');
+    if (b || e.target===m){ m.onclick=null; closeModal(); return; }
+    if (!c) return; const src=invItems(c.dataset.cp); m.onclick=null; closeModal();
+    if (!(await confirmBox(`Добавить ${src.length} позиций с ${S.blocks.get(c.dataset.cp).name}?`,'Добавить'))) return;
+    for (const it of src){ const d={}; for (const k of ['name','brand','model','art','qty','place']) d[k]=iv(it,k)??''; d.sn=''; d.note=''; d.del=0; setInv(id, uid(), d, false); }
+    toast('Скопировано: '+src.length); render(); };
+}
+function invCSV(){
+  const q=v=>{ const s=String(v??''); return /[;"\n\r]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
+  const lines=[['Блок','Залежь','Где','Наименование','Марка','Модель','Артикул','Серийный №','Кол-во','Примечание','Кто записал','Когда'].join(';')];
+  for (const b of blockList()) for (const it of invItems(b.id)) lines.push([b.name,b.zal,iv(it,'place')||'ТУЗ',iv(it,'name'),iv(it,'brand'),iv(it,'model'),iv(it,'art'),iv(it,'sn'),iv(it,'qty'),iv(it,'note'),it.f.name?it.f.name.by:'',fmtD(dstr(it.f.name&&it.f.name.t>1?it.f.name.t:it.ct))].map(q).join(';'));
+  return '﻿'+lines.join('\r\n');
+}
+function invTable(id){ const L=invItems(id); if(!L.length) return '';
+  return `<details><summary>Состав шкафа (${L.length})</summary><table><tr><th>Где</th><th>Наименование</th><th>Марка / модель</th><th>Артикул</th><th>SN</th><th>Кол-во</th><th>Примечание</th></tr>${L.map(it=>`<tr><td>${esc(iv(it,'place')||'ТУЗ')}</td><td>${esc(iv(it,'name'))}</td><td>${esc([iv(it,'brand'),iv(it,'model')].filter(Boolean).join(' '))}</td><td>${esc(iv(it,'art')||'')}</td><td>${esc(iv(it,'sn')||'')}</td><td class=c>${esc(iv(it,'qty')||1)}</td><td>${esc(iv(it,'note')||'')}</td></tr>`).join('')}</table></details>`; }
+
 // ---------------- синхронизация ----------------
 function syncHTML(){
   const ls=S.set.lastSend;
@@ -655,12 +784,13 @@ function syncHTML(){
   <div class="card"><div class="sec">ОТЧЁТ</div>
    <button class="btn wide" data-act="report">${ICON.dl} Отчёт: папка с фото по блокам</button>
    <button class="btn wide" data-act="csv" style="margin-top:8px">${ICON.dl} Таблица для Excel (CSV)</button>
+   <button class="btn wide" data-act="invcsv" style="margin-top:8px">${ICON.dl} Состав шкафов (CSV)</button>
    <div class="small mute" style="margin-top:6px">Отчёт — zip-архив: «Залежь → Блок → фото с датой», плюс общий Отчёт.html и таблица. Удобно открывать на ПК.</div></div>
   <div class="card"><div class="sec">ЖУРНАЛ</div><div class="hist">${S.log.length?[...S.log].reverse().slice(0,30).map(l=>`<div>${fmtDT(l.t)} — ${esc(l.m)}</div>`).join(''):'<div>Пока пусто</div>'}</div></div>`;
 }
 let phMode='new';
 function packageData(withBase){
-  const state={}; for (const [id,s] of S.st) state[id]={f:s.f, visits:s.visits};
+  const state={}; for (const [id,s] of S.st) state[id]={f:s.f, visits:s.visits, inv:s.inv||{}};
   const photos=[...S.photos.values()].map(p=>{ const {noBlob,...m}=p; return m; });
   const d={app:'obhod-h1', ver:1, at:Date.now(), by:S.set.name, dev:S.set.dev, state, photos};
   if (withBase){ d.base={ts:S.baseTs, blocks:[...S.blocks.values()]}; }
@@ -693,7 +823,7 @@ async function sendData(){
 }
 async function importFiles(files){
   if(!files.length) return; persistAsk();
-  let tot={blocks:0, fields:0, visits:0, photos:0, base:false, from:new Set()};
+  let tot={blocks:0, fields:0, visits:0, photos:0, inv:0, base:false, from:new Set()};
   for (const f of files){
     try{
       const z=await unzip(f); const dj=z.get('data.json'); if(!dj) throw new Error('В архиве нет data.json — это не файл обхода');
@@ -708,6 +838,10 @@ async function importFiles(files){
         for (const k in inc.f||{}){ const a=inc.f[k], c=cur.f[k];
           if (!c || a.t>c.t || (a.t===c.t && String(a.d||'')>String(c.d||''))){ if(!c || JSON.stringify(c)!==JSON.stringify(a)){ cur.f[k]=a; tot.fields++; ch=true; } } }
         for (const v of inc.visits||[]) if(!cur.visits.some(x=>x.id===v.id)){ cur.visits.push(v); tot.visits++; ch=true; }
+        if (inc.inv){ const ci=invOf(id);
+          for (const iid in inc.inv){ const a=inc.inv[iid], c=ci[iid];
+            if (!c){ ci[iid]=a; tot.inv++; ch=true; continue; }
+            for (const k in a.f){ const x=a.f[k], y=c.f[k]; if(!y || x.t>y.t || (x.t===y.t && String(x.d||'')>String(y.d||''))){ if(!y || JSON.stringify(x)!==JSON.stringify(y)){ c.f[k]=x; tot.inv++; ch=true; } } } } CAT=null; }
         if (ch){ tot.blocks++; await saveState(id); }
       }
       const files=new Set(d.files||[]);
@@ -725,7 +859,7 @@ async function importFiles(files){
   saveLog();
   render();
   if (S.set.name && S.blocks.size) infoBox(`<h3>Данные приняты</h3><div>${tot.from.size?'От: <b>'+esc([...tot.from].join(', '))+'</b><br>':''}
-    ${tot.base?'Список блоков обновлён ('+S.blocks.size+')<br>':''}Изменено блоков: <b>${tot.blocks}</b>, полей: ${tot.fields}, отметок обхода: ${tot.visits}<br>Новых фото: <b>${tot.photos}</b></div>`);
+    ${tot.base?'Список блоков обновлён ('+S.blocks.size+')<br>':''}Изменено блоков: <b>${tot.blocks}</b>, полей: ${tot.fields}, отметок обхода: ${tot.visits}<br>Новых фото: <b>${tot.photos}</b>${tot.inv?'<br>Состав шкафов: изменений '+tot.inv:''}</div>`);
 }
 
 // ---------------- отчёт и CSV ----------------
@@ -771,6 +905,7 @@ async function exportReport(){
        <p>${r.last?'Обход: <b>'+fmtD(r.last)+'</b>, '+esc(r.by):'<span class=mute>Не обходили</span>'} · Программа залита: <b>${esc(r.prog||'—')}</b> · ПЛК: ${esc((r.model+' '+r.ver).trim()||'—')}${r.ok==='нет'?' <span class=red>(не подходит)</span>':''} · ШУ ТУРР необходим: <b>${esc(r.turr||'—')}</b>${r.dist!==''?' ('+esc(r.dist)+' м)':''}</p>
        ${r.short?`<p class=red>Не хватает: ${esc(r.short)}</p>`:''}${r.note?`<p>Что мешает: ${esc(r.note)}</p>`:''}${r.cmz?`<p>ТУЗ: ${esc(r.cmz)}</p>`:''}${r.cmr?`<p>ТУРР: ${esc(r.cmr)}</p>`:''}
        ${r.last?`<details><summary>Чек-лист</summary><table><tr><th>ТУЗ</th><th>Надо</th><th>Факт</th><th>Кабель</th></tr>${items(TUZ)}</table>${r.turr==='да'?`<table><tr><th>ТУРР</th><th>Надо</th><th>Факт</th><th>Кабель</th></tr>${items(TURR)}</table>`:''}</details>`:''}
+       ${invTable(b.id)}
        ${imgs.length?`<div class=g>${imgs.map(i=>`<figure><a href="${encodeURI(i.src)}"><img loading=lazy src="${encodeURI(i.src)}"></a><figcaption>${esc(i.cap)}</figcaption></figure>`).join('')}</div>`:''}</section>`);
     }
     const rows=blockList().map(b=>{ const r=rowData(b); return `<tr><td>${r.n}</td><td><a href="#b${esc(b.id)}">${esc(r.name)}</a></td><td>${esc(r.zal)}</td><td class="${hiExtr(b)?'red':''}">${r.extr!=null?fmtNum(r.extr)+'%':esc(r.extr_txt||'')}</td><td class="${r.acid===0?'red':''}">${fmtNum(r.acid)}</td><td>${esc(r.prog)}</td><td>${fmtD(r.last)}</td><td>${esc(r.by)}</td><td>${r.pct}%</td><td>${esc(r.turr)}</td><td class=w>${esc(r.short)}</td><td>${r.photos||''}</td><td>${esc(r.result)}</td></tr>`; }).join('');
@@ -783,7 +918,7 @@ figure{margin:0}figure img{width:100%;aspect-ratio:4/3;object-fit:cover;border-r
 <h1>Обход блоков — Харасан-1</h1><p class=mute>Выгружено ${fmtDT(Date.now())} · ${esc(S.set.name)} · фото лежат в папках «Залежь → Блок»</p>
 <div class=wrap><table><tr><th>№</th><th>Блок</th><th>Залежь</th><th>Извлечено</th><th>H₂SO₄, т</th><th>Программа</th><th>Обход</th><th>Кто</th><th>Заполнено</th><th>ШУ ТУРР</th><th>Не хватает</th><th>Фото</th><th>Итог</th></tr>${rows}</table></div>
 ${secs.join('')}</body></html>`;
-    ents.unshift({name:`${root}/Отчёт.html`, data:html}, {name:`${root}/Таблица.csv`, data:csvText()});
+    ents.unshift({name:`${root}/Отчёт.html`, data:html}, {name:`${root}/Таблица.csv`, data:csvText()}, {name:`${root}/Состав шкафов.csv`, data:invCSV()});
     const z=await zipBlob(ents);
     await shareOrSave(z, root+'.zip', 'application/zip', false);
     S.log.push({t:Date.now(), m:`Отчёт выгружен (${(z.size/1048576).toFixed(1)} МБ)`}); saveLog();
@@ -838,6 +973,13 @@ document.addEventListener('click', async e=>{
     case 'inc': { const v=fv(id,'f:'+k); setField(id,'f:'+k, Math.min(20,(v??0)+1)); refreshBlockParts(id,k); break; }
     case 'dec': { const v=fv(id,'f:'+k); if (v===undefined) break; if (v===0) clearField(id,'f:'+k); else setField(id,'f:'+k,v-1); refreshBlockParts(id,k); break; }
     case 'q0': setField(id,'f:'+k,0); refreshBlockParts(id,k); break;
+    case 'inv': go('inv-'+encodeURIComponent(id)); break;
+    case 'iplace': S.invPlace=k; render(); break;
+    case 'iadd': invForm(id); break;
+    case 'iedit': invForm(id,k); break;
+    case 'iquick': { const c=catalog().combos.find(x=>x.name===k)||{name:k}; invForm(id,null,{...c, place:S.invPlace||'ТУЗ'}); break; }
+    case 'icopy': invCopy(id); break;
+    case 'invcsv': shareOrSave(new Blob([invCSV()],{type:'text/csv'}), `Состав шкафов ${dstr()}.csv`, 'text/csv', false); break;
     case 'editneed': S.editNeed=!S.editNeed; render(); break;
     case 'ninc': setField(id,'n:'+k, Math.min(20, need(b,k)+1)); refreshBlockParts(id,k); break;
     case 'ndec': setField(id,'n:'+k, Math.max(0, need(b,k)-1)); refreshBlockParts(id,k); break;
