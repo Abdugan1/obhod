@@ -59,6 +59,11 @@ textarea{min-height:70px;resize:vertical}
 .blk .meta{font-size:13px;color:var(--mute);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
 .red{color:var(--bad);font-weight:700}
 .pill{font-size:12px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap;background:var(--chip);color:var(--mute)}
+.rv{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)}.rv:first-of-type{border-top:0}
+.rvl{flex:1;min-width:0;word-break:break-word}.rvb{display:flex;gap:6px;flex:none}.rvb .btn{min-width:44px;min-height:40px;padding:6px 10px}.rvb .btn svg{width:18px;height:18px}
+.rvh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}.btn.sm{min-height:34px;padding:6px 10px;font-size:13px}
+.rvimg{width:110px;height:82px;object-fit:cover;border-radius:8px;background:var(--chip);flex:none}.rv .old{text-decoration:line-through;color:var(--mute)}
+.badge{position:absolute;top:2px;right:0;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;line-height:17px;text-align:center}
 .pill.ok{background:var(--okbg);color:var(--ok)}.pill.warn{background:var(--warnbg);color:var(--warn)}.pill.bad{background:var(--badbg);color:var(--bad)}
 .prog{height:5px;border-radius:3px;background:var(--chip);margin-top:8px;overflow:hidden}.prog i{display:block;height:100%;background:var(--pri)}
 .empty{text-align:center;padding:30px 10px;color:var(--mute)}
@@ -105,6 +110,11 @@ textarea{min-height:70px;resize:vertical}
 .off{opacity:.45;pointer-events:none}
 .vrow{display:flex;align-items:center;justify-content:space-between;gap:6px}.vdel{border:0;background:transparent;color:var(--mute);font-size:18px;width:32px;height:28px}
 .iphead{margin-bottom:6px}.ipinp{font-family:ui-monospace,Consolas,monospace;font-weight:800;font-size:20px!important;flex:1;max-width:260px}
+.plcsub{margin-top:4px;padding:6px 8px;border-left:3px solid var(--pri2);border-radius:4px}.plcsub .cab{padding-left:4px;flex-wrap:wrap}.plcsub .seg button{min-height:34px;min-width:44px;font-size:13px}
+.fmgrid{display:grid;grid-template-columns:minmax(0,1fr) 84px 84px;gap:6px;align-items:center}.fmgrid .hh{font-size:11px;color:var(--mute);text-align:center;font-weight:700}.fmgrid .l{font-weight:600;font-size:15px}.fmgrid input{text-align:center}
+.phd{font-size:12px;font-weight:700;color:var(--mute);margin:10px 0 2px}.dchips .chip{min-height:32px;font-size:13px}
+.todo{display:block;width:100%;text-align:left;border:0;border-radius:14px;background:var(--warnbg);color:var(--warn);padding:10px 14px;margin-bottom:8px}.todo b{display:block;font-size:16px}.todo span{font-size:13px}
+.todo2{display:flex;align-items:center;gap:8px;background:var(--warnbg);color:var(--warn);border-radius:10px;padding:8px 10px;font-size:14px;margin-top:6px}.todo2 span{flex:1}
 .seg.mode{display:flex;margin-bottom:8px}.seg.mode button{flex:1;min-height:40px}
 .pills{display:flex;flex-direction:column;gap:3px;align-items:flex-end}.prog2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .netrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}.netrow .nl{font-size:12px;font-weight:800;color:var(--pri);margin-right:2px}
@@ -112,7 +122,7 @@ textarea{min-height:70px;resize:vertical}
 .ipchip small{font-family:system-ui,sans-serif;font-weight:600;font-size:10px;color:var(--mute)}
 .ipchip.sug{background:transparent;border:1.5px dashed var(--pri);opacity:.9}.ipchip.warn{border-color:var(--warn);background:var(--warnbg);color:var(--warn)}
 .pgrid{display:grid;grid-template-columns:minmax(0,1fr) 88px 88px;gap:6px;align-items:center;margin-top:12px}
-.pgrid .ph{font-size:11px;color:var(--mute);text-align:center;font-weight:700}.pgrid .pl{font-weight:600;font-size:15px}
+.pgrid .hh{font-size:11px;color:var(--mute);text-align:center;font-weight:700}.pgrid .pl{font-weight:600;font-size:15px}
 .pc{min-height:40px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-weight:700;font-size:14px;color:var(--mute)}
 .pc.y{background:var(--okbg);border-color:var(--ok);color:var(--ok)}.pc.n{background:var(--badbg);border-color:var(--bad);color:var(--bad)}.pc.p{background:var(--warnbg);border-color:var(--warn);color:var(--warn)}
 .ipstat{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.ipstat .pill{border:0;cursor:pointer;font-size:12px}.ipstat .pill.sel{outline:2px solid var(--pri)}
@@ -180,6 +190,7 @@ tr:hover td{background:var(--pri2)}
 <header class="bar">
   <button class="ib" id="bBack" aria-label="Назад" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
   <h1 id="title">Обход блоков</h1>
+  <button class="ib" id="bRev" aria-label="Проверка" title="Проверка" hidden style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><span id="revN" class="badge" hidden></span></button>
   <button class="ib" id="bIp" aria-label="IP-реестр" title="IP-реестр"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="5" rx="1"/><rect x="2" y="17" width="6" height="5" rx="1"/><rect x="16" y="17" width="6" height="5" rx="1"/><path d="M12 7v5M5 17v-3h14v3"/></svg></button>
   <button class="ib" id="bTable" aria-label="Таблица" title="Таблица"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg></button>
   <button class="ib" id="bSync" aria-label="Синхронизация" title="Синхронизация и экспорт"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 0 1-14.3 4.9M4 12A8 8 0 0 1 18.3 7.1"/><path d="M18.5 3v4.3h-4.3M5.5 21v-4.3h4.3"/></svg></button>
@@ -190,24 +201,28 @@ tr:hover td{background:var(--pri2)}
 <div id="toast"></div>
 <input type="file" id="fCam" accept="image/*" capture="environment" hidden>
 <input type="file" id="fGal" accept="image/*" multiple hidden>
-<input type="file" id="fImp" accept=".zip,application/zip,application/x-zip-compressed" multiple hidden>
+<input type="file" id="fImp" accept=".zip,application/zip,application/x-zip-compressed,.json,application/json" multiple hidden>
 <script>
 {
-const APP_VER = '1.8';
+const APP_VER = '1.11';
 // ---------------- чек-лист ----------------
 const TUZ = [
  ['T_exist','Наличие ТУЗ',1,1],['T_power','Питание в блоке',1,1],['T_cab','Шкаф управления (ШУ)',1,1],['T_mast','Мачта',1,1],
- ['T_ant','Антенна',1,1,'T_antc'],['T_valve','Электроклапан',1,1,'T_valvec'],['T_ddk','Датчик давл. кислоты',1,1,'T_ddkc'],
- ['T_ddv','Датчик давл. ВР',1,0,'T_ddvc'],['T_fmc','Кабель расходомеров',1,1],['T_shpow','Питание в ШУ',1,1],
+ ['T_ant','Антенна',1,1,'T_antc'],['T_valve','Электроклапан',1,1,'T_valvec'],['T_fmc','Кабель расходомеров',1,1],['T_shpow','Питание в ШУ',1,1],
  ['T_psu','Блок питания 24В',1,1],['T_ups220','ИБП 220В',1,0],['T_ups24','ИБП 24В',0,0],['T_bat24','Аккумулятор 24В',0,0],
  ['T_rs','Модуль RS-485',2,1],['T_rscon','Коннектор RS-485',2,1],['T_plc','ПЛК',1,1],['T_ai','Модуль AI',2,1],['T_ao','Модуль AO',2,1],
  ['T_sw','Свитч / хаб',1,0],['T_poe','PoE-инжектор',1,1],['T_hmi','Панель оператора',1,1]];
 const TURR = [
  ['R_cab','ШУ в ТУРР',1,1],['R_mast','Мачта',1,1],['R_ant','Антенна',1,1,'R_antc'],['R_poe','PoE-инжектор',1,1],
- ['R_dd','Датчик давл. ПР',1,0,'R_ddc'],['R_pow','Питание ШУ',1,1],['R_psu','Блок питания 24В',1,1],['R_ups','ИБП 220В',1,0],
+ ['R_pow','Питание ШУ',1,1],['R_psu','Блок питания 24В',1,1],['R_ups','ИБП 220В',1,0],
  ['R_rs','Модуль RS-485',1,1],['R_rscon','Коннектор RS-485',1,1],['R_plc','ПЛК',1,1],['R_ai','Модуль AI',1,0],
  ['R_sw','Свитч / хаб',1,0],['R_hmi','Панель управления',1,0]];
+// датчики давления — отдельный раздел: могут быть подключены и к ТУЗ, и к ТУРР
+const SENS = [['T_ddk','Датчик давл. кислоты',1,1,'T_ddkc'],['T_ddv','Датчик давл. ВР',1,0,'T_ddvc'],['R_dd','Датчик давл. ПР',1,0,'R_ddc']];
+const SENS_DEF = {T_ddk:'ТУЗ', T_ddv:'ТУЗ', R_dd:'ТУРР'};
+const ALLROWS = () => [...TUZ, ...SENS, ...TURR];
 const ITEM = {}; for (const a of TUZ) ITEM[a[0]] = {id:a[0], lb:a[1], need:a[2], crit:a[3], cab:a[4], sec:'ТУЗ'};
+for (const a of SENS) ITEM[a[0]] = {id:a[0], lb:a[1], need:a[2], crit:a[3], cab:a[4], sec:'Датчики'};
 for (const a of TURR) ITEM[a[0]] = {id:a[0], lb:a[1], need:a[2], crit:a[3], cab:a[4], sec:'ТУРР'};
 const CABLE_OF = {}; for (const k in ITEM) if (ITEM[k].cab) CABLE_OF[ITEM[k].cab] = k;
 // минимум (хватает для работы), «надо» — желательно; необязательные датчики; место под датчик (бобышка)
@@ -218,11 +233,14 @@ const PLACE = {T_ddk:'T_ddk_pl', T_ddv:'T_ddv_pl', R_dd:'R_dd_pl'};
 const PLACE_OF = {}; for (const k in PLACE) PLACE_OF[PLACE[k]] = k;
 const PARENT = k => CABLE_OF[k] || PLACE_OF[k];
 const minOf = (b,k) => { const n=need(b,k); return MINQ[k]!=null ? Math.min(n, MINQ[k]) : n; };
-const PHOTO_CATS = ['ТУЗ','ТУРР','Шкаф','Антенна','Расходомеры','Другое'];
+const PHOTO_CATS = ['ТУЗ','ТУРР','Шкаф ТУЗ','Шкаф ТУРР','Антенна','Датчики','Расходомеры','Другое'];
+const catOf = p => { const c=p.cat?p.cat.v:''; return c==='Шкаф' ? 'Шкаф ТУЗ' : (c||'Другое'); };
 const DEF_PLCV = {AG40:'да', AG31:'нет', AG30:'нет', AE30:'нет'};
 const FIELD_LB = {plc_model:'ПЛК ТУЗ', plc_ver:'Версия ПЛК', link:'Кабель ТУРР–ТУЗ', dist:'Расстояние ТУЗ–ТУРР', turr_need:'ШУ в ТУРР необходим',
  fm_tuz:'Расх. не подходят (ТУЗ)', fm_turr:'Расх. не подходят (ТУРР)', cm_tuz:'Комментарий ТУЗ', cm_turr:'Комментарий ТУРР',
- result:'Итог', result_note:'Что мешает', prog:'Программа залита',
+ result:'Итог', result_note:'Что мешает', prog:'Программа залита', rplc_model:'ПЛК ТУРР', rplc_ver:'Версия ПЛК ТУРР',
+ fm_total_tuz:'Расходомеров всего (ТУЗ)', fm_total_turr:'Расходомеров всего (ТУРР)', filled:'Данные заполнены',
+ dd_to_T_ddk:'Датчик кислоты подключён к', dd_to_T_ddv:'Датчик ВР подключён к', dd_to_R_dd:'Датчик ПР подключён к',
  prog_tuz_site:'Программа ТУЗ на месте', prog_tuz_scada:'Программа ТУЗ в SCADA', prog_turr_site:'Программа ТУРР на месте', prog_turr_scada:'Программа ТУРР в SCADA'};
 const PROG_CYCLE=[undefined,'да','нет','частично'];
 const progVal=(id,k)=>{ const v=fv(id,k); if(v!==undefined) return v; return k==='prog_tuz_site' ? fv(id,'prog') : undefined; };
@@ -273,13 +291,13 @@ const saveState = id => dbPut('state', id, st(id));
 const saveSet = () => dbPut('kv','settings',S.set);
 const saveLog = () => dbPut('kv','log',S.log.slice(-200));
 function setField(id, k, v){
-  st(id).f[k] = {v, t:Date.now(), by:S.set.name, d:S.set.dev};
+  const r={v, t:Date.now(), by:S.set.name, d:S.set.dev}; st(id).f[k]=r; admSignRec(id,k,r);
   if (id!==G && !k.startsWith('n:')) ensureVisit(id, k.startsWith('prog') ? 'prog' : undefined);
   saveState(id);
 }
 // два вида обхода: железо (по умолчанию) и проверка программы (k:'prog')
 const vKind = v => v.k==='prog' ? 'prog' : 'hw';
-function ensureVisit(id, kind){ const s=st(id), d=dstr(), kk=kind||'hw'; if(!s.visits.some(x=>!x.del && x.d===d && x.by===S.set.name && vKind(x)===kk)) s.visits.push(kind ? {id:uid(), d, t:Date.now(), by:S.set.name, k:kind} : {id:uid(), d, t:Date.now(), by:S.set.name}); }
+function ensureVisit(id, kind){ const s=st(id), d=dstr(), kk=kind||'hw'; if(!s.visits.some(x=>!x.del && x.d===d && x.by===S.set.name && vKind(x)===kk)){ const v=kind ? {id:uid(), d, t:Date.now(), by:S.set.name, k:kind} : {id:uid(), d, t:Date.now(), by:S.set.name}; s.visits.push(v); admSignVisit(id,v); } }
 function lastVisit(id, kind){ const kk=kind||'hw'; const v=st(id).visits.filter(x=>!x.del && vKind(x)===kk); if(!v.length) return null; return v.reduce((a,b)=> (b.d>a.d || (b.d===a.d && b.t>a.t)) ? b : a); }
 function plcOk(ver){ if(!ver) return ''; const f=st(G).f['plcv:'+ver]; return f ? f.v : (DEF_PLCV[ver]||''); }
 function plcVersions(){ const s=new Set(Object.keys(DEF_PLCV)); for (const k in st(G).f) if (k.startsWith('plcv:')) s.add(k.slice(5)); return [...s]; }
@@ -288,10 +306,25 @@ function baseNeed(b, id){ return (b.need && b.need[id]!=null) ? b.need[id] : ITE
 function need(b, id){ if (CABLE_OF[id]) return need(b, CABLE_OF[id]) > 0 ? 1 : 0; const o=fv(b.id,'n:'+id); return o!==undefined ? o : baseNeed(b,id); }
 const turrNeeded = id => fv(id,'turr_need')==='да';
 
+// когда заполнять бессмысленно
+const TUZ_FIELD = new Set(['T_exist','T_power','T_cab']);
+function offReason(id, k){
+  if (ITEM[k] && ITEM[k].sec==='ТУЗ'){
+    if (k!=='T_exist' && fv(id,'f:T_exist')===0) return 'ТУЗ нет';
+    if (!TUZ_FIELD.has(k) && fv(id,'f:T_cab')===0) return 'шкафа нет';
+  }
+  if (ITEM[k] && ITEM[k].sec==='ТУРР' && k!=='R_cab' && fv(id,'f:R_cab')===0) return 'шкафа нет';
+  if (k==='T_antc' && fv(id,'f:T_mast')===0) return 'нет мачты';
+  if (k==='R_antc' && fv(id,'f:R_mast')===0) return 'нет мачты';
+  if (k==='L_cab' && turrNeeded(id)) return 'в ТУРР свой ШУ';
+  if (CABLE_OF[k]) return offReason(id, CABLE_OF[k]);
+  return '';
+}
+const offCab = (id, cab) => { if (fv(id,'f:'+CABLE_OF[cab])===0) return 'нет самого элемента'; if (cab==='T_antc' && fv(id,'f:T_mast')===0) return 'нет мачты'; if (cab==='R_antc' && fv(id,'f:R_mast')===0) return 'нет мачты'; return ''; };
 function applicable(id){
   const b=S.blocks.get(id), out=[];
-  const add = a => { if (need(b,a[0])>0){ out.push(a[0]); if(a[4]) out.push(a[4]); } };
-  TUZ.forEach(add);
+  const add = a => { if (need(b,a[0])>0 && !offReason(id,a[0])){ out.push(a[0]); if(a[4] && !offCab(id,a[4])) out.push(a[4]); } };
+  TUZ.forEach(add); SENS.forEach(add);
   if (!turrNeeded(id)) out.push('L_cab'); else TURR.forEach(add);
   return out;
 }
@@ -311,7 +344,8 @@ function gaps(id){
     else if (v<mn) bad.push(lb + (n-v>1 ? ' ×'+(n-v) : ''));
     else want.push(lb+': '+v+' из '+n);
   }
-  const ver=fv(id,'plc_ver'); if (fv(id,'f:T_plc')>=1 && plcOk(ver)==='нет') bad.push('ПЛК не подходит ('+ver+')');
+  const ver=fv(id,'plc_ver'); if (fv(id,'f:T_plc')>=1 && !offReason(id,'T_plc') && plcOk(ver)==='нет') bad.push('ПЛК не подходит ('+ver+')');
+  const rver=fv(id,'rplc_ver'); if (turrNeeded(id) && fv(id,'f:R_plc')>=1 && !offReason(id,'R_plc') && plcOk(rver)==='нет') bad.push('ТУРР: ПЛК не подходит ('+rver+')');
   return {bad, want};
 }
 const shortages = id => gaps(id).bad;
@@ -323,6 +357,13 @@ function status(id, kind){
   if (!pr && fv(id,'result')==='готов') return {k:'done', t:'готов · '+dd, sh:dd, cls:'ok', lv};
   return {k:'done', t:(pr?'проверена ':'обойден ')+dd, sh:dd, cls:'ok', lv};
 }
+// «нужно заполнить»: есть фото за день, после которого не было ни одной отметки
+const DATA_SKIP = k => k.startsWith('n:') || k.startsWith('prog') || k==='plc_ver_txt';
+function lastDataDay(id){ let m=''; const s=st(id);
+  for (const k in s.f){ const f=s.f[k]; if (DATA_SKIP(k) || f.d==='base' || !f.t || f.t<1e12) continue; const d=dstr(f.t); if (d>m) m=d; }
+  for (const it of Object.values(s.inv||{})) for (const k in it.f){ const f=it.f[k]; if (f.d==='base' || f.t<1e12) continue; const d=dstr(f.t); if (d>m) m=d; }
+  return m; }
+function needFill(id){ const ph=photosOf(id); if(!ph.length) return 0; const ld=lastDataDay(id); return ph.filter(p=>dstr(p.t)>ld).length; }
 const progFilled = id => ['prog_tuz_site','prog_tuz_scada','prog_turr_site','prog_turr_scada'].filter(k=>progVal(id,k)!==undefined).length/4;
 const homeMode = () => S.set.homeMode || 'hw';
 const hiExtr = b => b.extr!=null && b.extr>=89.5;
@@ -335,6 +376,8 @@ async function load(){
   S.log = (await dbGet('kv','log')) || []; if(!Array.isArray(S.log)) S.log=[];
   S.baseTs = (await dbGet('kv','baseTs')) || 0;
   S.blocks = await dbAll('blocks'); S.st = await dbAll('state'); S.photos = await dbAll('photos');
+  await loadKeys();
+  if (S.admin){ await loadQueue(); PEND=(await dbGet('kv','pend'))||{}; await unsealLocal(); } else await sealLocalInv();
 }
 const blockList = () => [...S.blocks.values()].sort((a,b)=>a.n-b.n);
 
@@ -345,8 +388,8 @@ const wide = () => matchMedia('(min-width:1000px)').matches;
 let lastRoute='';
 function render(){
   const r=route(); const v=$('#view');
-  const rk=location.hash; if (rk!==lastRoute){ lastRoute=rk; S.editNeed=false; S.invPlace='ТУЗ'; requestAnimationFrame(()=>window.scrollTo(0,0)); }
-  closeModal(true);
+  const rk=location.hash; if (rk!==lastRoute){ lastRoute=rk; S.editNeed=false; S.invPlace='ТУЗ'; S.phDate=''; S.phCat=S.set.curCat||'ТУЗ'; requestAnimationFrame(()=>window.scrollTo(0,0)); }
+  closeModal(true); updRevBadge();
   $('#bBack').hidden = r.v==='home' || (r.v==='block' && wide());
   if (!S.set.name || !S.blocks.size){ $('#title').textContent='Обход блоков'; v.innerHTML=welcomeHTML(); return; }
   if (r.v==='block' && !S.blocks.has(r.id)){ go(''); return; }
@@ -362,7 +405,8 @@ function render(){
   if (r.v==='settings'){ $('#title').textContent='Настройки'; v.innerHTML=settingsHTML(); updStorage(); return; }
   if (r.v==='table'){ $('#title').textContent='Таблица'; v.innerHTML=tableHTML(); return; }
   if (r.v==='ip'){ $('#title').textContent='IP-реестр'; v.innerHTML=ipHTML(); return; }
-  if (r.v==='inv'){ if(!S.blocks.has(r.id)){ go(''); return; } $('#title').textContent='Состав · '+S.blocks.get(r.id).name; v.innerHTML=invHTML(r.id); $('#bBack').hidden=false; return; }
+  if (r.v==='review'){ if(!S.admin){ go(''); return; } $('#title').textContent='Проверка'; v.innerHTML=reviewHTML(); updRevBadge(); loadThumbs(); fillRevLog(); return; }
+  if (r.v==='inv'){ if(!S.admin || !S.blocks.has(r.id)){ go(''); return; } $('#title').textContent='Состав · '+S.blocks.get(r.id).name; v.innerHTML=invHTML(r.id); $('#bBack').hidden=false; return; }
   go('');
 }
 
@@ -385,7 +429,7 @@ function filtered(){
   let L=blockList().filter(b=>{
     if (S.zal && String(b.zal)!==S.zal) return false;
     if (q && /^\d+\.\d+/.test(q)){ if (!ipsOfBlock(b.id).some(x=>x.ip.endsWith(q) || x.ip.endsWith('.'+q))) return false; }
-    else if (q && !b.id.toLowerCase().includes(q) && !b.name.toLowerCase().includes(q) && !(q.length>=4 && invItems(b.id).some(it=>norm([iv(it,'name'),iv(it,'model'),iv(it,'art'),iv(it,'sn')].join(' ')).includes(norm(q))))) return false;
+    else if (q && !b.id.toLowerCase().includes(q) && !b.name.toLowerCase().includes(q) && !(S.admin && q.length>=4 && invItems(b.id).some(it=>norm([iv(it,'name'),iv(it,'model'),iv(it,'art'),iv(it,'sn')].join(' ')).includes(norm(q))))) return false;
     const md=homeMode(), sh=status(b.id).k, sp=status(b.id,'prog').k;
     if (md!=='both'){ const s = md==='prog' ? sp : sh;
       if (S.filter==='none' && s!=='none') return false;
@@ -397,6 +441,7 @@ function filtered(){
       if (S.filter==='stale' && sh!=='stale' && sp!=='stale') return false;
       if (S.filter==='done' && !(sh==='done' && sp==='done')) return false; }
     if (S.filter==='hi' && !hiExtr(b)) return false;
+    if (S.filter==='todo' && !needFill(b.id)) return false;
     if (S.filter==='photo' && !photosOf(b.id).length) return false;
     return true; });
   if (S.sort==='zal') L.sort((a,b)=>a.zal-b.zal || a.n-b.n);
@@ -406,7 +451,7 @@ function filtered(){
   return L;
 }
 function homeHTML(sel){
-  const all=blockList(), md=homeMode();
+  const all=blockList(), md=homeMode(), todo=all.filter(b=>needFill(b.id)).length;
   const cnt = kind => { const c={none:0,stale:0,done:0}; for (const b of all) c[status(b.id,kind).k]++; return c; };
   const ch=cnt(), cp=cnt('prog');
   const zals=[...new Set(all.map(b=>b.zal))].sort((a,b)=>a-b);
@@ -414,13 +459,15 @@ function homeHTML(sel){
     ? [['all','Все'],['nohw','Нет обхода оборуд.'],['noprog','Программа не проверена'],['stale','Давно'],['done','Всё сделано'],['hi','≈90%+'],['photo','С фото']]
     : md==='prog' ? [['all','Все'],['none','Не проверена'],['stale','Давно'],['done','Проверена'],['hi','≈90%+'],['photo','С фото']]
     : [['all','Все'],['none','Не обойдены'],['stale','Давно'],['done','Обойдены'],['hi','≈90%+'],['photo','С фото']];
+  if (todo) F.splice(1,0,['todo','Заполнить '+todo]);
   if (!F.some(f=>f[0]===S.filter)) S.filter='all';
   const L=filtered();
   const both=all.filter(b=>status(b.id).k==='done' && status(b.id,'prog').k==='done').length;
   const stats = md==='both'
     ? `<div class="stat"><b>${all.length}</b><span>всего</span></div><div class="stat ok"><b>${ch.done}</b><span>оборуд.</span></div><div class="stat ok"><b>${cp.done}</b><span>программа</span></div><div class="stat"><b>${both}</b><span>оба</span></div>`
     : (c => `<div class="stat"><b>${all.length}</b><span>всего</span></div><div class="stat ok"><b>${c.done}</b><span>${md==='prog'?'проверено':'обойдено'}</span></div><div class="stat warn"><b>${c.stale}</b><span>давно</span></div><div class="stat"><b>${c.none}</b><span>осталось</span></div>`)(md==='prog'?cp:ch);
-  return `<div class="seg mode" role="tablist">${[['hw','Оборудование'],['prog','Программа'],['both','Оба']].map(([k,t])=>`<button class="${md===k?'on':''}" data-act="hmode" data-k="${k}">${t}</button>`).join('')}</div>
+  return `${todo?`<button class="todo" data-act="flt" data-k="todo"><b>Заполнить данные: ${todo} ${todo===1?'блок':todo<5?'блока':'блоков'}</b><span>есть фото, но отметок после них не было</span></button>`:''}
+  <div class="seg mode" role="tablist">${[['hw','Оборудование'],['prog','Программа'],['both','Оба']].map(([k,t])=>`<button class="${md===k?'on':''}" data-act="hmode" data-k="${k}">${t}</button>`).join('')}</div>
   <div class="stats">${stats}</div>
   <div class="search"><input type="search" id="q" placeholder="Поиск: 166, 8-5…" value="${esc(S.q)}" inputmode="search">
    <select id="zal" aria-label="Залежь"><option value="">Все залежи</option>${zals.map(z=>`<option value="${z}" ${String(z)===S.zal?'selected':''}>Залежь ${z}</option>`).join('')}</select></div>
@@ -434,9 +481,10 @@ function photosOf(id){ return [...S.photos.values()].filter(p=>p.block===id && !
 function cardHTML(b, sel){
   const md=homeMode(), sh=status(b.id), sp=status(b.id,'prog'), np=photosOf(b.id).length, acid=b.acid||0;
   const s = md==='prog' ? sp : sh, p = md==='prog' ? progFilled(b.id) : progress(b.id);
-  const pills = md==='both'
+  const nf=needFill(b.id);
+  const pills = (nf?`<span class="pill warn">заполнить</span>`:'') + (md==='both'
     ? `<span class="pills"><span class="pill ${sh.cls}">обор. ${esc(sh.sh)}</span><span class="pill ${sp.cls}">прогр. ${esc(sp.sh)}</span></span>`
-    : `<span class="pill ${s.cls}">${esc(s.t)}</span>`;
+    : `<span class="pill ${s.cls}">${esc(s.t)}</span>`);
   return `<button class="blk ${sel===b.id?'sel':''}" data-act="open" data-id="${esc(b.id)}">
    <div class="t"><span class="nm">${esc(b.name)}</span>${pills}</div>
    <div class="meta"><span>залежь ${esc(b.zal)}</span>
@@ -460,30 +508,44 @@ function itemHTML(id, b, k){
    <div class="ctl"><button data-act="ndec" data-id="${esc(id)}" data-k="${k}" aria-label="Меньше">−</button>
     <button class="v need ${own?'own':''}" data-act="nreset" data-id="${esc(id)}" data-k="${k}" aria-label="Надо">${n}</button>
     <button data-act="ninc" data-id="${esc(id)}" data-k="${k}" aria-label="Больше">+</button></div></div></div>`;
-  if (!n) return `<div class="it nn" id="it-${k}"><div class="r"><div class="lb">${lbl}<small>не нужно на этом блоке${v!==undefined?' · стоит: '+v:''}</small></div></div></div>`;
-  const cls = v===undefined ? 'na' : (v>=n || (k==='T_ups220' && upsAlt(id)) ? 'ok' : (OPT.has(k) || v>=minOf(b,k)) ? 'mid' : 'bad');
+  const off=offReason(id,k);
+  if (off) return `<div class="it nn" id="it-${k}"><div class="r"><div class="lb">${lbl}<small>не заполняется — ${esc(off)}</small></div></div></div>`;
+  if (!n && own) return `<div class="it nn" id="it-${k}"><div class="r"><div class="lb">${lbl}<small>не нужно на этом блоке${v!==undefined?' · стоит: '+v:''}</small></div></div></div>`;
+  const cls = v===undefined ? 'na' : !n ? (v>0?'ok':'na') : (v>=n || (k==='T_ups220' && upsAlt(id)) ? 'ok' : (OPT.has(k) || v>=minOf(b,k)) ? 'mid' : 'bad');
   let cab='';
+  if (SENS_DEF[k]){ const to=fv(id,'dd_to_'+k)||SENS_DEF[k];
+    cab+=`<div class="cab">Подключён к: <div class="seg">${['ТУЗ','ТУРР'].map(x=>`<button class="${to===x?'on':''}" data-act="set" data-id="${esc(id)}" data-k="dd_to_${k}" data-v="${x}">${x}</button>`).join('')}</div></div>`; }
+  if ((k==='T_plc' || k==='R_plc') && v!==0) cab+=plcSubHTML(id, k==='T_plc'?'':'r');
   if (PLACE[k] && v===0){ const pv=fv(id,'f:'+PLACE[k]);
     cab+=`<div class="cab">Место под датчик: <div class="seg">${[[1,'есть'],[0,'нет']].map(([x,t])=>`<button class="${pv===x?'on':''} ${pv===x&&x===0?'no':''}" data-act="cab" data-id="${esc(id)}" data-k="${PLACE[k]}" data-v="${x}">${t}</button>`).join('')}</div></div>`; }
-  if (it.cab){ const cv=fv(id,'f:'+it.cab);
+  if (it.cab && offCab(id,it.cab)) cab+=`<div class="cab">Кабель: <span class="small">не нужен — ${esc(offCab(id,it.cab))}</span></div>`;
+  else if (it.cab){ const cv=fv(id,'f:'+it.cab);
     cab+=`<div class="cab">Кабель: <div class="seg">${[[1,'есть'],[0,'нет']].map(([x,t])=>`<button class="${cv===x?'on':''} ${cv===x&&x===0?'no':''}" data-act="cab" data-id="${esc(id)}" data-k="${it.cab}" data-v="${x}">${t}</button>`).join('')}</div></div>`; }
   return `<div class="it" id="it-${k}"><div class="r">
-   <div class="lb">${lbl}<small>надо ${n}${MINQ[k]!=null&&n>MINQ[k]?' (хватает '+MINQ[k]+')':''}${OPT.has(k)?' · не обязательно':''}${own?' (своё)':''}${old?' · ранее: '+esc(old):''}</small></div>
+   <div class="lb">${lbl}<small>${n?'надо '+n:'не обязательно'}${MINQ[k]!=null&&n>MINQ[k]?' (хватает '+MINQ[k]+')':''}${n&&OPT.has(k)?' · не обязательно':''}${own?' (своё)':''}${old?' · ранее: '+esc(old):''}</small></div>
    <div class="ctl"><button class="z" data-act="q0" data-id="${esc(id)}" data-k="${k}" aria-label="Нет">нет</button>
     <button data-act="dec" data-id="${esc(id)}" data-k="${k}" aria-label="Минус">−</button>
     <button class="v ${cls}" data-act="tap" data-id="${esc(id)}" data-k="${k}" aria-label="Отметить">${v===undefined?'—':v}</button>
     <button data-act="inc" data-id="${esc(id)}" data-k="${k}" aria-label="Плюс">+</button></div></div>${cab}</div>`;
+}
+function plcSubHTML(id, pre){
+  const mk=pre+'plc_model', vk=pre+'plc_ver', model=fv(id,mk), ver=fv(id,vk), ok=plcOk(ver);
+  return `<div class="plcsub"><div class="cab">Модель: ${segHTML('set',id,mk,['1214','1215','другой'],model)}</div>
+   <div class="cab">Версия: ${segHTML('set',id,vk,[...plcVersions(),'другая'],ver)}</div>
+   ${ver==='другая'?`<div class="cab">Какая: <input type="text" data-inp="${vk}_txt" data-id="${esc(id)}" value="${esc(fv(id,vk+'_txt')||'')}" style="max-width:160px;min-height:36px"></div>`:''}
+   <div class="cab">Подходит: <span class="pill ${ok==='да'?'ok':ok==='нет'?'bad':''}">${ok||(ver?'не указано в настройках':'—')}</span></div></div>`;
 }
 const needBtn = () => `<button class="chip ${S.editNeed?'on':''}" data-act="editneed">${S.editNeed?'Готово':'Изменить «надо»'}</button>`;
 const needHint = () => S.editNeed ? '<div class="short" style="background:var(--pri2);color:var(--ink);margin:0 0 6px">Сколько нужно именно на этом блоке. 0 — не нужно совсем. Изменение уходит коллегам при синхронизации.</div>' : '';
 function lastvHTML(id){ const lv=lastVisit(id); return lv ? 'Обход оборудования: <b>'+fmtD(lv.d)+'</b>, '+esc(lv.by) : '<span class="mute">Оборудование ещё не обходили</span>'; }
 function lastpHTML(id){ const lv=lastVisit(id,'prog'); return lv ? 'Программа проверена: <b>'+fmtD(lv.d)+'</b>, '+esc(lv.by) : '<span class="mute">Программу ещё не проверяли</span>'; }
 function summaryHTML(id){
-  const g=gaps(id), sh=g.bad, p=progress(id);
+  const g=gaps(id), sh=g.bad, p=progress(id), nf=needFill(id);
   const done = p>=0.999;
   return `<div class="row2 small"><span class="b">Заполнено ${Math.round(p*100)}%</span><div class="prog" style="flex:1;margin:0"><i style="width:${Math.round(p*100)}%"></i></div></div>`+
    (sh.length ? `<div class="short"><b>Не хватает:</b> ${esc(sh.join('; '))}</div>` : (done ? '<div class="okbox">Всё необходимое есть</div>' : ''))+
-   (g.want.length ? `<div class="want"><b>Желательно:</b> ${esc(g.want.join('; '))}</div>` : '');
+   (g.want.length ? `<div class="want"><b>Желательно:</b> ${esc(g.want.join('; '))}</div>` : '')+
+   (nf ? `<div class="todo2"><span>Есть ${nf} фото без отметок — заполните данные по фото.</span><button class="vbtn" data-act="filled" data-id="${esc(id)}">${ICON.check} всё заполнено</button></div>` : '');
 }
 function blockHTML(id){
   const b=S.blocks.get(id), lv=lastVisit(id), acid=b.acid||0;
@@ -497,7 +559,7 @@ function blockHTML(id){
    <div><small>Отк. скв.</small><b>${esc(b.otk)}</b></div><div><small>Зак. скв.</small><b>${esc(b.zak)}</b></div>
    <div class="${acid===0?'zero':''}"><small>H₂SO₄, т</small><b>${fmtNum(acid)}</b></div></div>
   <div id="netrow">${netRowHTML(id)}</div>
-  <div class="pgrid"><span></span><span class="ph">На месте</span><span class="ph">SCADA</span>
+  <div class="pgrid"><span></span><span class="hh">На месте</span><span class="hh">SCADA</span>
    ${[['tuz','ТУЗ'],['turr','ТУРР']].map(([x,t])=>`<span class="pl">Программа ${t}</span>${['site','scada'].map(w=>{ const k='prog_'+x+'_'+w, v=progVal(id,k); return `<button class="pc ${v==='да'?'y':v==='нет'?'n':v==='частично'?'p':''}" data-act="pcyc" data-id="${esc(id)}" data-k="${k}">${esc(v||'—')}</button>`; }).join('')}`).join('')}</div>
   <div class="visit"><span class="small" id="lastp">${lastpHTML(id)}</span>
    <button class="vbtn" data-act="pvisit" data-id="${esc(id)}" title="Отметить проверку программы сегодня">${ICON.check} сегодня</button></div>
@@ -508,31 +570,24 @@ function blockHTML(id){
 
   <div class="card" id="sum">${summaryHTML(id)}</div>
 
-  <div class="card"><div class="sec">ПЛК ТУЗ</div>
-   <div class="fld"><span class="l">Модель</span>${segHTML('set',id,'plc_model',['1214','1215','другой'],model)}</div>
-   <div class="fld"><span class="l">Версия</span>${segHTML('set',id,'plc_ver',[...vers,'другая'],ver)}</div>
-   ${ver==='другая'?`<div class="fld"><span class="l">Какая</span><input type="text" data-inp="plc_ver_txt" data-id="${esc(id)}" value="${esc(fv(id,'plc_ver_txt')||'')}" style="max-width:200px"></div>`:''}
-   <div class="fld"><span class="l">Подходит</span><span class="pill ${ok==='да'?'ok':ok==='нет'?'bad':''}">${ok||(ver?'не указано в настройках':'—')}</span></div></div>
-
-  <div class="card"><div class="sech"><div class="sec">ТУЗ</div>${needBtn()}</div>${needHint()}${TUZ.map(a=>itemHTML(id,b,a[0])).join('')}</div>
+  <div class="card"><div class="sech"><div class="sec">ТУЗ</div>${needBtn()}</div>${needHint()}${fv(id,'f:T_exist')===0?'<div class="want" style="margin:0 0 6px">ТУЗ нет — остальное заполнять не нужно.</div>':fv(id,'f:T_cab')===0?'<div class="want" style="margin:0 0 6px">Шкафа нет — содержимое шкафа не заполняется.</div>':''}${TUZ.map(a=>itemHTML(id,b,a[0])).join('')}</div>
+  <div class="card"><div class="sech"><div class="sec">ДАТЧИКИ ДАВЛЕНИЯ</div></div>${SENS.map(a=>itemHTML(id,b,a[0])).join('')}</div>
 
   <div class="card"><div class="sec">СВЯЗЬ С ТУРР</div>
-   <div class="fld"><span class="l">Кабель ТУРР – ТУЗ</span><div class="seg">${[[1,'есть'],[0,'нет']].map(([x,t])=>`<button class="${link===x?'on':''} ${link===x&&x===0?'no':''}" data-act="cab" data-id="${esc(id)}" data-k="L_cab" data-v="${x}">${t}</button>`).join('')}</div>
-    ${b.oldLink?`<span class="small mute" style="width:100%">ранее: ${esc(b.oldLink)}</span>`:''}</div>
+   ${tn==='да'?`<div class="fld"><span class="l">Кабель ТУРР – ТУЗ</span><span class="small mute">не нужен — в ТУРР свой ШУ</span></div>`:`<div class="fld"><span class="l">Кабель ТУРР – ТУЗ</span><div class="seg">${[[1,'есть'],[0,'нет']].map(([x,t])=>`<button class="${link===x?'on':''} ${link===x&&x===0?'no':''}" data-act="cab" data-id="${esc(id)}" data-k="L_cab" data-v="${x}">${t}</button>`).join('')}</div>
+    ${b.oldLink?`<span class="small mute" style="width:100%">ранее: ${esc(b.oldLink)}</span>`:''}</div>`}
    <div class="fld"><label for="dist">Расстояние ТУЗ – ТУРР, м</label><input type="number" id="dist" inputmode="numeric" data-inp="dist" data-num="1" data-id="${esc(id)}" value="${esc(fv(id,'dist')??'')}" style="max-width:120px"></div>
    <div class="fld"><span class="l">ШУ в ТУРР необходим?</span>${segHTML('set',id,'turr_need',['да','нет'],tn)}</div></div>
 
-  <div class="card ${tn==='да'?'':'off'}" id="turr"><div class="sech"><div class="sec">ТУРР ${tn==='да'?'':'— заполняется, если ШУ в ТУРР необходим'}</div>${tn==='да'?needBtn():''}</div>${tn==='да'?needHint():''}${TURR.map(a=>itemHTML(id,b,a[0])).join('')}</div>
+  <div class="card ${tn==='да'?'':'off'}" id="turr"><div class="sech"><div class="sec">ТУРР ${tn==='да'?'':'— заполняется, если ШУ в ТУРР необходим'}</div>${tn==='да'?needBtn():''}</div>${tn==='да'?needHint():''}${tn==='да'&&fv(id,'f:R_cab')===0?'<div class="want" style="margin:0 0 6px">Шкафа в ТУРР нет — содержимое не заполняется.</div>':''}${TURR.map(a=>itemHTML(id,b,a[0])).join('')}</div>
 
-  <div class="card"><button class="btn wide" data-act="inv" data-id="${esc(id)}" style="justify-content:space-between"><span>Состав шкафа</span><span class="mute small">ТУЗ ${invItems(id,'ТУЗ').length} · ТУРР ${invItems(id,'ТУРР').length} поз. ›</span></button></div>
-  <div class="card"><div class="sec">РАСХОДОМЕРЫ, НЕ ПОДЛЕЖАЩИЕ АВТОМАТИЗАЦИИ</div>
-   ${['fm_tuz','fm_turr'].map((k,i)=>`<div class="fld"><span class="l">${i?'ТУРР':'ТУЗ'}, шт</span><input type="number" inputmode="numeric" data-inp="${k}" data-num="1" data-id="${esc(id)}" value="${esc(fv(id,k)??'')}" style="max-width:100px"></div>`).join('')}</div>
+  ${S.admin?`<div class="card"><button class="btn wide" data-act="inv" data-id="${esc(id)}" style="justify-content:space-between"><span>Состав шкафа</span><span class="mute small">ТУЗ ${invItems(id,'ТУЗ').length} · ТУРР ${invItems(id,'ТУРР').length} поз. ›</span></button></div>`:''}
+  <div class="card"><div class="sec">РАСХОДОМЕРЫ</div>
+   <div class="fmgrid"><span></span><span class="hh">ТУЗ</span><span class="hh">ТУРР</span>
+    <span class="l">Всего, шт</span>${['fm_total_tuz','fm_total_turr'].map(k=>`<input type="number" inputmode="numeric" data-inp="${k}" data-num="1" data-id="${esc(id)}" value="${esc(fv(id,k)??'')}">`).join('')}
+    <span class="l">Не подлежат автоматизации, шт</span>${['fm_tuz','fm_turr'].map(k=>`<input type="number" inputmode="numeric" data-inp="${k}" data-num="1" data-id="${esc(id)}" value="${esc(fv(id,k)??'')}">`).join('')}</div></div>
 
-  <div class="card"><div class="sec">ФОТО</div>
-   <div class="chips">${PHOTO_CATS.map(c=>`<button class="chip ${S.set.curCat===c?'on':''}" data-act="cat" data-k="${esc(c)}">${esc(c)}</button>`).join('')}</div>
-   <div class="row2"><button class="btn pri" data-act="cam" data-id="${esc(id)}" style="flex:1">${ICON.cam} Снять</button><button class="btn" data-act="gal" data-id="${esc(id)}" style="flex:1">${ICON.img} Из галереи</button></div>
-   <div class="ph" id="ph">${ph.map(photoTile).join('')}</div>
-   <div class="small mute" style="margin-top:6px">${ph.length?'':'Фото пока нет. Выберите категорию и нажмите «Снять». '}Старые фото — «Из галереи»: дата берётся из снимка, её можно поправить, открыв фото.</div></div>
+  <div class="card" id="phcard">${photoCardHTML(id)}</div>
 
   <div class="card"><div class="sec">КОММЕНТАРИИ</div>
    <label class="small b" for="cmt">ТУЗ</label><textarea id="cmt" data-inp="cm_tuz" data-id="${esc(id)}">${esc(fv(id,'cm_tuz')||'')}</textarea>
@@ -544,9 +599,26 @@ function blockHTML(id){
 
   <div class="card"><div class="sec">ИСТОРИЯ</div><div id="histbox">${historyHTML(id)}</div></div>`;
 }
+function photoCardHTML(id){
+  const all=photosOf(id), cat=S.phCat||S.set.curCat||'ТУЗ', dsel=S.phDate||'';
+  const byCat = cat==='Все' ? all : all.filter(p=>catOf(p)===cat);
+  const dates=[...new Set(byCat.map(p=>dstr(pdate(p))))].sort().reverse();
+  const L = dsel && dates.includes(dsel) ? byCat.filter(p=>dstr(pdate(p))===dsel) : byCat;
+  const cnt=c=>all.filter(p=>catOf(p)===c).length, yr=new Date().getFullYear();
+  const dlabel=d=>fmtD(d).slice(0,5)+(+d.slice(0,4)!==yr?'.'+d.slice(2,4):'');
+  const groups=[]; for (const p of L){ const d=dstr(pdate(p)); let g=groups[groups.length-1]; if(!g||g.d!==d){ g={d,list:[]}; groups.push(g); } g.list.push(p); }
+  return `<div class="sec">ФОТО</div>
+   <div class="chips" style="flex-wrap:wrap"><button class="chip ${cat==='Все'?'on':''}" data-act="phcat" data-k="Все">Все ${all.length}</button>${PHOTO_CATS.map(c=>`<button class="chip ${cat===c?'on':''}" data-act="phcat" data-k="${esc(c)}">${esc(c)}${cnt(c)?' '+cnt(c):''}</button>`).join('')}</div>
+   ${dates.length>1?`<div class="chips dchips"><button class="chip ${!dsel||!dates.includes(dsel)?'on':''}" data-act="phdate" data-k="">Все даты</button>${dates.map(d=>`<button class="chip ${dsel===d?'on':''}" data-act="phdate" data-k="${d}">${dlabel(d)}</button>`).join('')}</div>`:''}
+   ${cat==='Все' ? '<div class="small mute" style="margin:2px 0 6px">Чтобы снять фото, выберите категорию.</div>'
+    : `<div class="row2"><button class="btn pri" data-act="cam" data-id="${esc(id)}" style="flex:1">${ICON.cam} Снять · ${esc(cat)}</button><button class="btn" data-act="gal" data-id="${esc(id)}" style="flex:1">${ICON.img} Из галереи</button></div>`}
+   <div id="ph">${groups.map(g=>`<div class="phd">${fmtD(g.d)} · ${g.list.length} фото</div><div class="ph">${g.list.map(photoTile).join('')}</div>`).join('')}</div>
+   ${L.length?'':`<div class="small mute" style="margin-top:6px">${cat==='Все'?'Фото пока нет.':'В категории «'+esc(cat)+'» фото нет.'}</div>`}
+   <div class="small mute" style="margin-top:6px">Старые фото — «Из галереи»: дата берётся из снимка, её можно поправить, открыв фото.</div>`;
+}
 function photoTile(p){
   const d=new Date(pdate(p)), yr=d.getFullYear()!==new Date().getFullYear() ? '.'+String(d.getFullYear()).slice(2) : '';
-  return `<button data-act="pview" data-pid="${esc(p.id)}">${p.noBlob?`<div class="nob">фото у ${esc(p.by)}<br>ещё не передано</div>`:`<img alt="" data-thumb="${esc(p.id)}">`}<span>${pad(d.getDate())}.${pad(d.getMonth()+1)}${yr} · ${esc(p.cat?p.cat.v:'')}</span></button>`;
+  return `<button data-act="pview" data-pid="${esc(p.id)}">${p.noBlob?`<div class="nob">фото у ${esc(p.by)}<br>ещё не передано</div>`:`<img alt="" data-thumb="${esc(p.id)}">`}<span>${p.taken2||p.dsrc==='file'?'':pad(d.getHours())+':'+pad(d.getMinutes())+' · '}${esc(catOf(p))}</span></button>`;
 }
 function historyHTML(id){
   const s=st(id); const vis=s.visits.filter(v=>!v.del).sort((a,b)=>b.t-a.t);
@@ -576,12 +648,23 @@ function refreshBlockParts(id, k){
 }
 
 // ---------------- фото ----------------
-async function makeImg(file, max, q){
+// подпись на фото: «ТУЗ 114» / «ТУРР 114» (по категории), остальное — «Блок 114»
+function wmText(id, cat){ const side = /ТУРР/.test(cat) ? 'ТУРР' : /ТУЗ/.test(cat) ? 'ТУЗ' : 'Блок'; return side+' '+id; }
+function drawWm(ctx, w, h, text){
+  const fs=Math.max(16, Math.round(Math.min(w,h)*0.04)), pad=Math.round(fs*0.45);
+  ctx.font=`700 ${fs}px system-ui,-apple-system,Roboto,Arial,sans-serif`; ctx.textBaseline='middle';
+  const tw=ctx.measureText(text).width, bw=tw+pad*2, bh=fs+pad*1.4, x=w-bw-pad, y=h-bh-pad, r=Math.round(fs*0.3);
+  ctx.fillStyle='rgba(0,0,0,0.55)'; ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(x,y,bw,bh,r); else ctx.rect(x,y,bw,bh); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.fillText(text, x+pad, y+bh/2);
+}
+async function makeImg(file, max, q, wm){
   let bmp, w, h;
   try { bmp = await createImageBitmap(file); w=bmp.width; h=bmp.height; }
   catch(e){ bmp = await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=URL.createObjectURL(file); }); w=bmp.naturalWidth; h=bmp.naturalHeight; }
   const s=Math.min(1, max/Math.max(w,h)); const cw=Math.round(w*s), ch=Math.round(h*s);
-  const c=document.createElement('canvas'); c.width=cw; c.height=ch; c.getContext('2d').drawImage(bmp,0,0,cw,ch);
+  const c=document.createElement('canvas'); c.width=cw; c.height=ch; const ctx=c.getContext('2d'); ctx.drawImage(bmp,0,0,cw,ch);
+  if (wm) try { drawWm(ctx, cw, ch, wm); } catch(_){}
   const blob = await new Promise(r=>c.toBlob(r,'image/jpeg',q));
   return {blob, w:cw, h:ch};
 }
@@ -616,12 +699,13 @@ async function addPhotos(files, src){
   for (const f of files){
     try{
       const ex=await exifDate(f);
-      const {blob,w,h}=await makeImg(f,1920,0.82); const th=(await makeImg(blob,360,0.7)).blob;
+      const pcat=(S.phCat&&S.phCat!=='Все'?S.phCat:S.set.curCat)||'Другое';
+      const {blob,w,h}=await makeImg(f,1920,0.82, S.set.wm===false ? '' : wmText(id,pcat)); const th=(await makeImg(blob,360,0.7)).blob;
       const crc=crc32(new Uint8Array(await blob.arrayBuffer()));
       const t=Date.now();
       const taken = ex || (src==='cam' ? t : (f.lastModified||t));
-      const p={id:uid(), block:id, t, taken, dsrc: ex?'exif':(src==='cam'?'cam':'file'), by:S.set.name, dev:S.set.dev, cat:{v:S.set.curCat,t}, note:{v:'',t}, del:{v:0,t:0}, w, h, size:blob.size, crc};
-      await dbPut('blobs',p.id,blob); await dbPut('thumbs',p.id,th); await dbPut('photos',p.id,p); S.photos.set(p.id,p); added.push(p);
+      const p={id:uid(), block:id, t, taken, dsrc: ex?'exif':(src==='cam'?'cam':'file'), by:S.set.name, dev:S.set.dev, cat:{v:(S.phCat&&S.phCat!=='Все'?S.phCat:S.set.curCat)||'Другое',t}, note:{v:'',t}, del:{v:0,t:0}, w, h, size:blob.size, crc};
+      await dbPut('blobs',p.id,blob); await dbPut('thumbs',p.id,th); await dbPut('photos',p.id,p); S.photos.set(p.id,p); added.push(p); admSignPhoto(p);
     }catch(e){ console.error(e); toast('Не удалось обработать фото'); }
   }
   if (!added.length) return;
@@ -638,7 +722,7 @@ function askPhotoDate(list){
    <div class="row2" style="margin-top:12px"><button class="btn" data-m="no" style="flex:1">Оставить</button><button class="btn pri" data-m="ok" style="flex:1">Применить</button></div>`);
   m.onclick=async e=>{ const b=e.target.closest('[data-m]'); if(!b) return;
     if (b.dataset.m==='ok'){ const v=$('#pdSel').value; if(v){ const ms=new Date(v+'T12:00:00').getTime(), now=Date.now();
-      for (const p of list){ p.taken2={v:ms,t:now}; await dbPut('photos',p.id,p); } toast('Дата фото: '+fmtD(v)); } }
+      for (const p of list){ p.taken2={v:ms,t:now}; await dbPut('photos',p.id,p); admSignPhoto(p); } toast('Дата фото: '+fmtD(v)); } }
     m.onclick=null; closeModal(); render(); };
 }
 const toLocalInput = ms => { const d=new Date(ms); return dstr(ms)+'T'+pad(d.getHours())+':'+pad(d.getMinutes()); };
@@ -651,15 +735,15 @@ async function viewPhoto(pid){
    ${bl?`<img src="${u}" alt="">`:'<div style="flex:1;display:grid;place-items:center;color:#aaa">Фото ещё не передано с телефона '+esc(p.by)+'</div>'}
    <div class="vb"><div class="small" style="margin-bottom:6px">${esc(p.by)} · ${esc(S.blocks.get(p.block)?.name||'')} · добавлено ${fmtDT(p.t)}</div>
    <div class="row2" style="margin-bottom:8px"><label class="small" for="vDate" style="flex:none">Дата снимка</label><input type="datetime-local" id="vDate" data-v="date" value="${toLocalInput(pdate(p))}" style="flex:1;color-scheme:dark;background:#222;border-color:#333;color:#eee"></div>
-   <div class="chips">${PHOTO_CATS.map(c=>`<button class="chip ${p.cat.v===c?'on':''}" data-v="cat" data-c="${esc(c)}" style="background:${p.cat.v===c?'':'#222'};color:${p.cat.v===c?'':'#eee'};border-color:#333">${esc(c)}</button>`).join('')}</div>
+   <div class="chips">${PHOTO_CATS.map(c=>`<button class="chip ${catOf(p)===c?'on':''}" data-v="cat" data-c="${esc(c)}" style="background:${catOf(p)===c?'':'#222'};color:${catOf(p)===c?'':'#eee'};border-color:#333">${esc(c)}</button>`).join('')}</div>
    <div class="row2"><input type="text" placeholder="Подпись к фото" value="${esc(p.note.v)}" data-v="note" style="flex:1"><button class="btn bad" data-v="del" style="background:#222">Удалить</button></div></div>`;
   document.body.appendChild(el);
   const close=()=>{ if(u) URL.revokeObjectURL(u); el.remove(); document.removeEventListener('keydown',onKey); render(); };
   const onKey=e=>{ if(e.key==='Escape') close(); }; document.addEventListener('keydown',onKey);
-  const saveP=()=>{ dbPut('photos',p.id,p); };
+  const saveP=()=>{ dbPut('photos',p.id,p); admSignPhoto(p); };
   el.addEventListener('click', async e=>{ const t=e.target.closest('[data-v]'); if(!t) return;
     if (t.dataset.v==='close') close();
-    if (t.dataset.v==='cat'){ p.cat={v:t.dataset.c,t:Date.now()}; saveP(); el.querySelectorAll('[data-v=cat]').forEach(b=>{ const on=b.dataset.c===p.cat.v; b.classList.toggle('on',on); b.style.background=on?'':'#222'; b.style.color=on?'':'#eee'; }); }
+    if (t.dataset.v==='cat'){ p.cat={v:t.dataset.c,t:Date.now()}; saveP(); el.querySelectorAll('[data-v=cat]').forEach(b=>{ const on=b.dataset.c===catOf(p); b.classList.toggle('on',on); b.style.background=on?'':'#222'; b.style.color=on?'':'#eee'; }); }
     if (t.dataset.v==='del'){ if(await confirmBox('Удалить это фото?','Удалить')){ p.del={v:1,t:Date.now()}; saveP(); dbDel('blobs',p.id); dbDel('thumbs',p.id); close(); toast('Фото удалено'); } }
     if (t.dataset.v==='share'){ await shareOrSave(bl, safeName(`${S.blocks.get(p.block)?.name} ${fmtDT(p.t)}`)+'.jpg', 'image/jpeg', true); }
   });
@@ -1077,6 +1161,256 @@ function blockIpHTML(id){
    ${L.length?L.map(x=>`<button class="ipr" data-act="ipopen" data-k="${esc(x.ip)}"><span class="o">${esc(ipShort(x.ip))}</span><span class="d"><b>${esc(x.r.type||(netOf(x.ip.slice(0,x.ip.lastIndexOf('.'))).kind==='ant'?'Антенна':''))}</b><small>${esc([x.r.tia,x.r.model,x.r.place].filter(Boolean).join(' · '))}</small></span><span class="pill ${IPST[ipStatus(x.ip)][1]}">${IPST[ipStatus(x.ip)][0]}</span></button>`).join(''):'<div class="small mute">В IP-реестре этот блок не найден.</div>'}</div>`;
 }
 
+// ---------------- защита данных и проверка изменений ----------------
+const ADMIN_PUB = {"kty":"EC","crv":"P-256","x":"uLuFa6DZqO8fPjj20bPqbtNzQSeQpEQJJrhd73T12Go","y":"2xQe-gdymefxORq2ks6E1wEBX35IzJfvFmsDRpnryCg"};
+const RESERVED_SUB = ['abdugan','abdygan','abdughan','yerzhanov','erzhanov','yerjanov','erjanov','erzanov','muratul','muratyl'];
+const RESERVED_WORD = ['abdu'];
+const TRL={'а':'a','б':'b','в':'v','г':'g','ғ':'g','д':'d','е':'e','ё':'e','ж':'zh','з':'z','и':'i','й':'i','і':'i','к':'k','қ':'k','л':'l','м':'m','н':'n','ң':'n','о':'o','ө':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ұ':'u','ү':'u','ф':'f','х':'kh','һ':'h','ц':'ts','ч':'ch','ш':'sh','щ':'sh','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya','ә':'a'};
+function reservedName(n){
+  const s=String(n||'').normalize('NFKD').replace(/[̀-ͯ​-‏⁠﻿]/g,'').toLowerCase().replace(/[Ѐ-ӿ]/g,c=>TRL[c]!=null?TRL[c]:c);
+  const words=s.split(/[^a-z]+/).filter(Boolean), joined=words.join('');
+  return RESERVED_SUB.some(x=>joined.includes(x)) || words.some(w=>RESERVED_WORD.includes(w)) || RESERVED_WORD.includes(joined);
+}
+const enc8 = new TextEncoder(), dec8 = new TextDecoder();
+function b64(u8){ let s=''; for (let i=0;i<u8.length;i+=0x8000) s+=String.fromCharCode.apply(null, u8.subarray(i,i+0x8000)); return btoa(s); }
+const ub64 = s => Uint8Array.from(atob(s), c=>c.charCodeAt(0));
+async function deflate(u8){ return new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer()); }
+async function inflate(u8){ return new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer()); }
+const ECDSA={name:'ECDSA',namedCurve:'P-256'}, SIGN={name:'ECDSA',hash:'SHA-256'}, ECDH={name:'ECDH',namedCurve:'P-256'};
+let ADM=null, DEVKEY=null, ADMV=null, ADMH=null;
+const pubJwk = j => ({kty:'EC',crv:'P-256',x:j.x,y:j.y});
+async function admVerifyKey(){ if(!ADMV) ADMV=await crypto.subtle.importKey('jwk',pubJwk(ADMIN_PUB),ECDSA,false,['verify']); return ADMV; }
+async function admEcdhPub(){ if(!ADMH) ADMH=await crypto.subtle.importKey('jwk',pubJwk(ADMIN_PUB),ECDH,false,[]); return ADMH; }
+async function signB(key,u8){ return b64(new Uint8Array(await crypto.subtle.sign(SIGN,key,u8))); }
+async function verifyB(key,u8,sig){ try{ return await crypto.subtle.verify(SIGN,key,ub64(sig),u8); }catch(e){ return false; } }
+async function loadKeys(){
+  try{ DEVKEY=await dbGet('kv','devkey');
+    if(!DEVKEY){ const kp=await crypto.subtle.generateKey(ECDSA,false,['sign','verify']); const pj=await crypto.subtle.exportKey('jwk',kp.publicKey);
+      DEVKEY={privateKey:kp.privateKey, pub:pubJwk(pj)}; await dbPut('kv','devkey',DEVKEY); } }catch(e){ DEVKEY=null; }
+  const aj=await dbGet('kv','adminJwk'); if (aj) await setAdmin(aj, true);
+}
+async function setAdmin(j, silent){
+  if (!j || j.x!==ADMIN_PUB.x || j.y!==ADMIN_PUB.y || !j.d) throw new Error('Неверный файл');
+  const jw={kty:'EC',crv:'P-256',x:j.x,y:j.y,d:j.d};
+  ADM={sign:await crypto.subtle.importKey('jwk',jw,ECDSA,false,['sign']), ecdh:await crypto.subtle.importKey('jwk',jw,ECDH,false,['deriveBits'])};
+  S.admin=true;
+  if (!silent){ await dbPut('kv','adminJwk',jw); await unsealLocal(); await signOwn(); }
+}
+async function aesKeyFrom(bits){ const h=await crypto.subtle.digest('SHA-256',bits); return crypto.subtle.importKey('raw',h,{name:'AES-GCM'},false,['encrypt','decrypt']); }
+async function sealForAdmin(obj){
+  const eph=await crypto.subtle.generateKey(ECDH,true,['deriveBits']);
+  const bits=await crypto.subtle.deriveBits({name:'ECDH',public:await admEcdhPub()},eph.privateKey,256);
+  const key=await aesKeyFrom(bits), iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,await deflate(enc8.encode(JSON.stringify(obj)))));
+  const epk=await crypto.subtle.exportKey('jwk',eph.publicKey);
+  return {epk:{x:epk.x,y:epk.y}, iv:b64(iv), ct:b64(ct)};
+}
+async function openSeal(sl){
+  const ep=await crypto.subtle.importKey('jwk',pubJwk(sl.epk),ECDH,false,[]);
+  const bits=await crypto.subtle.deriveBits({name:'ECDH',public:ep},ADM.ecdh,256);
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(sl.iv)},await aesKeyFrom(bits),ub64(sl.ct));
+  return JSON.parse(dec8.decode(await inflate(new Uint8Array(pt))));
+}
+// состав шкафов: виден только администратору; у остальных хранится только в зашифрованном виде
+function mergeInvObj(obj){ let n=0;
+  for (const id in obj||{}){ const ci=invOf(id);
+    for (const iid in obj[id]){ const a=obj[id][iid], c=ci[iid];
+      if (!c){ ci[iid]=a; n++; continue; }
+      for (const k in a.f){ const x=a.f[k], y=c.f[k]; if(!y || x.t>y.t){ c.f[k]=x; n++; } } }
+    saveState(id); }
+  CAT=null; return n; }
+async function sealLocalInv(){
+  const obj={}; let any=false;
+  for (const [id,s] of S.st){ if (s.inv && Object.keys(s.inv).length){ obj[id]=s.inv; any=true; } }
+  if (!any) return;
+  try{ const sealed=await sealForAdmin(obj); const arr=(await dbGet('kv','invSealed'))||[]; arr.push(sealed); await dbPut('kv','invSealed',arr);
+    for (const id in obj){ delete st(id).inv; await saveState(id); } }catch(e){ console.error(e); }
+}
+async function unsealLocal(){
+  const arr=(await dbGet('kv','invSealed'))||[]; for (const sl of arr){ try{ mergeInvObj(await openSeal(sl)); }catch(e){ console.error(e); } }
+  if (arr.length) await dbDel('kv','invSealed');
+  const ix=await dbGet('kv','invx'); if (ix && ix.seal){ try{ mergeInvObj(await openSeal(ix.seal)); }catch(e){} }
+}
+async function makeInvx(){
+  const obj={}; for (const [id,s] of S.st) if (s.inv && Object.keys(s.inv).length) obj[id]=s.inv;
+  const t=Date.now(), seal=await sealForAdmin(obj);
+  return {t, seal, sig:await signB(ADM.sign, enc8.encode(t+'|'+seal.ct))};
+}
+async function invxValid(ix){ return !!(ix && ix.seal && ix.sig && await verifyB(await admVerifyKey(), enc8.encode(ix.t+'|'+ix.seal.ct), ix.sig)); }
+// очередь на проверку (только у администратора)
+let QUEUE=[];
+async function loadQueue(){ QUEUE=(await dbGet('kv','queue'))||[]; }
+const saveQueue = () => dbPut('kv','queue',QUEUE);
+function qPush(e){ const i=QUEUE.findIndex(x=>x.kind===e.kind && x.block===e.block && x.key===e.key && x.from.dev===e.from.dev); if(i>=0) QUEUE[i]=e; else QUEUE.push(e); }
+// подписи отдельных записей (ставятся только на устройствах администратора)
+const PMK=['cat','note','del','taken2'];
+const jv = v => JSON.stringify(v===undefined?null:v);
+const recMsg=(id,k,r)=>`f|${id}|${k}|${jv(r.v)}|${r.t}|${r.by||''}`;
+const visMsg=(id,v)=>`v|${id}|${v.id}|${v.d}|${v.t}|${v.by||''}|${v.k||''}|${v.del||0}|${v.keep||0}`;
+const phMsg=p=>`p|${p.id}|${p.block}|${p.crc||''}|${p.t}|${p.by||''}`;
+const pmMsg=(pid,k,r)=>`pm|${pid}|${k}|${jv(r.v)}|${r.t}`;
+const admSign = m => signB(ADM.sign, enc8.encode(m));
+async function admOk(m,s){ return !!s && await verifyB(await admVerifyKey(), enc8.encode(m), s); }
+function admSignRec(id,k,r){ if(!S.admin||!ADM) return; admSign(recMsg(id,k,r)).then(s=>{ r.s=s; if(st(id).f[k]===r) saveState(id); }).catch(()=>{}); }
+function admSignVisit(id,v){ if(!S.admin||!ADM) return; admSign(visMsg(id,v)).then(s=>{ v.s=s; saveState(id); }).catch(()=>{}); }
+async function admSignPhoto(p){ if(!S.admin||!ADM) return; try{ if(!p.s) p.s=await admSign(phMsg(p)); for (const k of PMK) if(p[k] && !p[k].s) p[k].s=await admSign(pmMsg(p.id,k,p[k])); await dbPut('photos',p.id,p); }catch(e){} }
+async function signOwn(){ // при включении режима — подписать то, что уже сделано на этом устройстве
+  for (const [id,s] of S.st){ let ch=false;
+    for (const k in s.f){ const r=s.f[k]; if (r.d===S.set.dev && !r.s){ r.s=await admSign(recMsg(id,k,r)); ch=true; } }
+    for (const v of s.visits) if (v.by===S.set.name && !v.s){ v.s=await admSign(visMsg(id,v)); ch=true; }
+    if (ch) await saveState(id); }
+  for (const p of S.photos.values()) if (p.dev===S.set.dev) await admSignPhoto(p);
+}
+const lww = (a,c) => !c || a.t>c.t || (a.t===c.t && String(a.d||'')>String(c.d||''));
+async function crcOk(bl, crc){ if (crc==null) return true; return crc32(new Uint8Array(await bl.arrayBuffer()))===crc; }
+let PEND={};
+const savePend = () => dbPut('kv','pend',PEND);
+const qKey = e => e.kind+'|'+e.block+'|'+e.key;
+const qSig = e => qKey(e)+'|'+(e.nu&&e.nu.t)+'|'+jv(e.nu&&e.nu.v)+'|'+(e.nu&&e.nu.by);
+function qPush2(e){
+  const dup=QUEUE.find(x=>qSig(x)===qSig(e)); if (dup) return false;
+  const nt=e.nu&&e.nu.t||0;
+  if (QUEUE.some(x=>qKey(x)===qKey(e) && x.from.dev===e.from.dev && !x.from.sus && !e.from.sus && (x.nu&&x.nu.t||0)>nt)) return false;   // уже есть более новое с того же устройства
+  QUEUE=QUEUE.filter(x=>!(qKey(x)===qKey(e) && x.from.dev===e.from.dev && !x.from.sus && !e.from.sus && (x.nu&&x.nu.t||0)<nt));
+  QUEUE.push(e); return true; }
+async function considerInv(obj, qe){
+  for (const id in obj){ if(!S.blocks.has(id)) continue; const ci=invOf(id);
+    for (const iid in obj[id]){ const a=obj[id][iid], c=ci[iid]; if(!a||!a.f) continue;
+      if (!c){ if (!(a.f.del&&a.f.del.v)) qe({kind:'inv+', block:id, key:iid, nu:a}); continue; }
+      for (const k in a.f){ const x=a.f[k], y=c.f[k]; if (!lww(x,y)) continue; if (y && jv(y.v)===jv(x.v)) continue;
+        qe({kind:'inv', block:id, key:iid+'.'+k, iid, fk:k, nu:x}); } } }
+}
+// приём файла на устройстве администратора: всё, что сделано не им, — на проверку
+async function adminMerge(d, z, from, tot){
+  const qe = o => { if (qPush2({qid:uid(), at:Date.now(), from, ...o})) tot.q++; if (o.imp) tot.imp.add(o.nu&&o.nu.by); };
+  for (const id in d.state||{}){
+    if (id!==G && !S.blocks.has(id)) continue;
+    const inc=d.state[id], cur=st(id); let ch=false;
+    for (const k in inc.f||{}){ const a=inc.f[k], c=cur.f[k];
+      if (!a || !lww(a,c)) continue;
+      if (c && jv(c.v)===jv(a.v)) continue;
+      if ((id===G && /^(ipj|scan):/.test(k)) || (a.s && await admOk(recMsg(id,k,a),a.s))){ cur.f[k]=a; ch=true; tot.fields++; continue; }
+      qe({kind:'f', block:id, key:k, nu:a, imp:reservedName(a.by)});
+    }
+    for (const v of inc.visits||[]){ const ex=cur.visits.find(x=>x.id===v.id);
+      const signed = !!v.s && await admOk(visMsg(id,v),v.s);
+      if (!ex){ if (signed || !reservedName(v.by)){ cur.visits.push(v); ch=true; tot.visits++; } else qe({kind:'v', block:id, key:v.id, nu:v, imp:true}); }
+      else if (v.del && !ex.del && !(ex.keep && ex.keep>=v.del)){ if (signed){ ex.del=v.del; ex.s=v.s; ch=true; } else qe({kind:'vdel', block:id, key:v.id, nu:v}); }
+      else if (signed && v.keep && ex.del && v.keep>ex.del){ ex.del=0; ex.keep=v.keep; ex.s=v.s; ch=true; }
+    }
+    if (inc.inv) await considerInv({[id]:inc.inv}, qe);
+    if (ch){ tot.blocks++; await saveState(id); }
+  }
+  const files=new Set(d.files||[]);
+  const blobOf = async p => { if(!files.has(p.id)) return null; const ent=z.get('photos/'+p.id+'.jpg'); if(!ent) return null; const bl=await ent.blob(); if(!(await crcOk(bl,p.crc))){ tot.bad++; return null; } return new Blob([bl],{type:'image/jpeg'}); };
+  for (const p0 of d.photos||[]){ const p={...p0}; delete p.noBlob; if(!p.id || !S.blocks.has(p.block)) continue;
+    const cur=S.photos.get(p.id);
+    if (!cur){
+      if (PEND[p.id]){ const pm=PEND[p.id]; for (const k of PMK) if (p[k] && (!pm[k]||p[k].t>pm[k].t)) pm[k]=p[k];
+        if (!pm.hasBlob){ const bl=await blobOf(p); if(bl){ await dbPut('blobs',p.id,bl); pm.hasBlob=true; } } continue; }
+      const signed = !!p.s && await admOk(phMsg(p),p.s);
+      if (signed || (p.del&&p.del.v)){ const bl=(p.del&&p.del.v)?null:await blobOf(p); if(bl) await dbPut('blobs',p.id,bl); else p.noBlob=true;
+        S.photos.set(p.id,p); await dbPut('photos',p.id,p); if(!(p.del&&p.del.v)) tot.photos++; continue; }
+      const bl=await blobOf(p); if(bl) await dbPut('blobs',p.id,bl);
+      PEND[p.id]={...p, hasBlob:!!bl}; qe({kind:'ph', block:p.block, key:p.id, nu:p, imp:reservedName(p.by)}); continue;
+    }
+    let chp=false;
+    for (const k of PMK){ const x=p[k], y=cur[k]; if (!x || (y && x.t<=y.t)) continue; if (y && jv(y.v)===jv(x.v)) continue;
+      if (x.s && await admOk(pmMsg(p.id,k,x),x.s)){ cur[k]=x; chp=true; } else qe({kind:'pm', block:cur.block, key:p.id+'.'+k, pid:p.id, fk:k, nu:x}); }
+    if (cur.noBlob && !(cur.del&&cur.del.v)){ const bl=await blobOf(p); if(bl){ await dbPut('blobs',p.id,bl); delete cur.noBlob; chp=true; } }
+    if (cur.del && cur.del.v){ dbDel('blobs',p.id); dbDel('thumbs',p.id); }
+    if (chp) await dbPut('photos',p.id,cur);
+  }
+  await savePend(); await saveQueue();
+}
+// ---- окно проверки ----
+const INV_LB={name:'Наименование', brand:'Производитель', model:'Модель', art:'Артикул', sn:'Серийный №', qty:'Кол-во', note:'Примечание', place:'Шкаф', del:'Удалено'};
+const PM_LB={cat:'Категория фото', note:'Подпись к фото', del:'Удаление фото', taken2:'Дата снимка'};
+function fmtV(v){ if (v==null || v==='') return '—'; if (typeof v==='object') return Object.entries(v).filter(([k,x])=>x!=null&&x!=='').map(([k,x])=>k+': '+x).join(', ')||'—'; return String(v); }
+function invItemName(e){ const it=invOf(e.block)[e.iid||e.key]; const src=it||e.nu; return (src && src.f && src.f.name && src.f.name.v) || 'позиция'; }
+function qLabel(e){
+  switch(e.kind){
+    case 'f': if (e.block===G){ if(e.key.startsWith('ip:')) return 'IP '+e.key.slice(3); if(e.key.startsWith('plcv:')) return 'Версия ПЛК '+e.key.slice(5); return e.key; } return fieldLabel(e.key);
+    case 'v': return 'Отметка обхода ('+(vKind(e.nu)==='prog'?'программа':'оборудование')+') '+fmtD(e.nu.d);
+    case 'vdel': return 'Удаление отметки обхода '+fmtD(e.nu.d);
+    case 'ph': return 'Новое фото · '+catOf(e.nu);
+    case 'pm': return PM_LB[e.fk]||e.fk;
+    case 'inv+': return 'Состав шкафа: новая позиция';
+    case 'inv': return 'Состав шкафа: '+invItemName(e)+' — '+(INV_LB[e.fk]||e.fk);
+  } return e.kind; }
+function qOld(e){
+  if (e.kind==='f'){ const c=st(e.block).f[e.key]; return c?c.v:null; }
+  if (e.kind==='pm'){ const p=S.photos.get(e.pid); const c=p&&p[e.fk]; if(!c) return null; return e.fk==='taken2'?fmtD(dstr(c.v)):e.fk==='del'?(c.v?'удалено':'есть'):c.v; }
+  if (e.kind==='inv'){ const it=invOf(e.block)[e.iid]; const c=it&&it.f[e.fk]; return c?c.v:null; }
+  if (e.kind==='vdel') return 'есть'; return null; }
+function qNew(e){
+  if (e.kind==='pm') return e.fk==='taken2'?fmtD(dstr(e.nu.v)):e.fk==='del'?(e.nu.v?'удалить':'вернуть'):e.nu.v;
+  if (e.kind==='inv+'){ const f=e.nu.f||{}; return ['name','brand','model','art','sn','qty','place'].map(k=>f[k]&&f[k].v).filter(x=>x!=null&&x!=='').join(' · '); }
+  if (e.kind==='vdel') return 'удалить'; if (e.kind==='v') return e.nu.by;
+  if (e.kind==='ph') return ''; return e.nu.v; }
+function qClean(){ const n0=QUEUE.length;
+  QUEUE=QUEUE.filter(e=>{
+    if (e.kind==='f'){ const c=st(e.block).f[e.key]; return !(c && jv(c.v)===jv(e.nu.v)); }
+    if (e.kind==='ph'){ const pm=PEND[e.key]; return !!pm && !(pm.del&&pm.del.v); }
+    if (e.kind==='pm'){ const p=S.photos.get(e.pid); return !!p && !(p[e.fk] && jv(p[e.fk].v)===jv(e.nu.v)); }
+    if (e.kind==='inv'){ const it=invOf(e.block)[e.iid]; return !(it && it.f[e.fk] && jv(it.f[e.fk].v)===jv(e.nu.v)); }
+    if (e.kind==='inv+') return !invOf(e.block)[e.key];
+    if (e.kind==='v') return !st(e.block).visits.some(x=>x.id===e.key);
+    if (e.kind==='vdel'){ const x=st(e.block).visits.find(x=>x.id===e.key); return !!x && !x.del; }
+    return true; });
+  if (QUEUE.length!==n0) saveQueue(); }
+const blkName = id => id===G ? 'IP-реестр и общие' : (S.blocks.get(id)||{name:id}).name;
+async function qDecide(qid, ok, quiet){
+  const i=QUEUE.findIndex(x=>x.qid===qid); if(i<0) return; const e=QUEUE[i]; QUEUE.splice(i,1);
+  const now=Date.now(), me=S.set.name, dev=S.set.dev, T=Math.max(now,(e.nu&&e.nu.t||0)+1);
+  const desc=`${blkName(e.block)} · ${qLabel(e)}${e.kind==='ph'?'':' = '+fmtV(qNew(e))} (${(e.nu&&e.nu.by)||e.from.by||'?'}, файл от ${e.from.by||'?'})`;
+  if (e.kind==='f'){ const s=st(e.block), c=s.f[e.key];
+    const r = ok ? {v:e.nu.v, t:T, by:e.nu.by, d:e.nu.d} : (c ? {v:c.v, t:T, by:me, d:dev} : {v:null, t:T, by:me, d:dev});
+    s.f[e.key]=r; r.s=await admSign(recMsg(e.block,e.key,r)); await saveState(e.block);
+    if (ok) QUEUE=QUEUE.filter(x=>!(x.kind==='f' && x.block===e.block && x.key===e.key)); }
+  else if (e.kind==='v'){ const v={...e.nu}; delete v.s; if(!ok) v.del=now; v.s=await admSign(visMsg(e.block,v)); st(e.block).visits.push(v); await saveState(e.block); }
+  else if (e.kind==='vdel'){ const x=st(e.block).visits.find(x=>x.id===e.key); if(x){ if(ok) x.del=e.nu.del||now; else x.keep=now; x.s=await admSign(visMsg(e.block,x)); await saveState(e.block); } }
+  else if (e.kind==='ph'){ const pm=PEND[e.key]; if(pm){ const p={...pm}; const has=p.hasBlob; delete p.hasBlob; delete p.s; if(!has) p.noBlob=true;
+      if(!ok){ p.del={v:1,t:now}; dbDel('blobs',p.id); dbDel('thumbs',p.id); }
+      S.photos.set(p.id,p); delete PEND[e.key]; await savePend(); await admSignPhoto(p); await dbPut('photos',p.id,p); } }
+  else if (e.kind==='pm'){ const p=S.photos.get(e.pid); if(p){ const c=p[e.fk];
+      p[e.fk] = ok ? {v:e.nu.v, t:T} : {v: c ? c.v : (e.fk==='del'?0:null), t:T};
+      if (e.fk==='del' && p.del.v){ dbDel('blobs',p.id); dbDel('thumbs',p.id); }
+      await admSignPhoto(p);
+      if (ok) QUEUE=QUEUE.filter(x=>!(x.kind==='pm' && x.key===e.key)); } }
+  else if (e.kind==='inv+'){ const ci=invOf(e.block); ci[e.key] = ok ? e.nu : {...e.nu, f:{...e.nu.f, del:{v:1,t:now,by:me,d:dev}}}; CAT=null; await saveState(e.block); }
+  else if (e.kind==='inv'){ const it=invOf(e.block)[e.iid]; if(it){ const y=it.f[e.fk];
+      it.f[e.fk] = ok ? {v:e.nu.v, t:T, by:e.nu.by, d:e.nu.d} : {v: y?y.v:null, t:T, by:me, d:dev}; CAT=null; await saveState(e.block);
+      if (ok) QUEUE=QUEUE.filter(x=>!(x.kind==='inv' && x.key===e.key && x.block===e.block)); } }
+  await saveQueue(); await revLog((ok?'Принято: ':'Отклонено: ')+desc);
+  if (!quiet) toast(ok?'Принято':'Отклонено');
+}
+function reviewHTML(){
+  qClean();
+  const who=S.revWho||'';
+  const people=new Map(); for (const e of QUEUE){ const n=(e.nu&&e.nu.by)||e.from.by||'?'; people.set(n,(people.get(n)||0)+1); }
+  const L=QUEUE.filter(e=>!who || ((e.nu&&e.nu.by)||e.from.by)===who);
+  const groups=new Map(); for (const e of L){ if(!groups.has(e.block)) groups.set(e.block,[]); groups.get(e.block).push(e); }
+  const order=[...groups.keys()].sort((a,b)=>(a===G)-(b===G) || ((S.blocks.get(a)||{n:0}).n-(S.blocks.get(b)||{n:0}).n));
+  const row = e => { const by=(e.nu&&e.nu.by)||'?', old=qOld(e), nw=qNew(e);
+    const flags=(e.imp?`<span class="pill bad">имя «${esc(by)}» — не с вашего устройства</span> `:'')+(e.from.sus?`<span class="pill warn">${esc(e.from.sus)}</span>`:'');
+    const ph = e.kind==='ph' ? `<img data-thumb="${esc(e.key)}" data-act="qimg" data-k="${esc(e.key)}" alt="Открыть фото" class="rvimg" style="cursor:zoom-in">` : '';
+    const vals = e.kind==='ph' ? (e.nu.note&&e.nu.note.v?`<div class="small">${esc(e.nu.note.v)}</div>`:'') :
+      (e.kind==='v'||e.kind==='inv+') ? `<div class="small"><b>${esc(fmtV(nw))}</b></div>` :
+      `<div class="small">было: <span class="old">${esc(fmtV(old))}</span> → <b>${esc(fmtV(nw))}</b></div>`;
+    return `<div class="rv">${ph}<div class="rvl"><div>${esc(qLabel(e))}</div>${vals}
+      <div class="small mute">${esc(by)} · ${fmtDT(e.nu&&e.nu.t||e.at)}${e.from.by && e.from.by!==by?' · файл от '+esc(e.from.by):''} ${flags}</div></div>
+      <div class="rvb"><button class="btn sm" data-act="qok" data-k="${e.qid}" aria-label="Принять">${ICON.check}</button><button class="btn sm" data-act="qno" data-k="${e.qid}" aria-label="Отклонить">${ICON.x}</button></div></div>`; };
+  const chips = people.size>1 ? `<div class="row2" style="margin-bottom:10px;flex-wrap:wrap"><button class="chip ${!who?'on':''}" data-act="qwho" data-k="">Все · ${QUEUE.length}</button>${[...people].map(([n,c])=>`<button class="chip ${who===n?'on':''}" data-act="qwho" data-k="${esc(n)}">${esc(n)} · ${c}</button>`).join('')}</div>` : '';
+  return `${chips}${L.length ? order.map(id=>`<div class="card"><div class="rvh"><b>${esc(blkName(id))}</b><span><button class="btn sm" data-act="qall" data-id="${esc(id)}" data-k="1">Принять все</button> <button class="btn sm" data-act="qall" data-id="${esc(id)}" data-k="0">Отклонить все</button></span></div>${groups.get(id).map(row).join('')}</div>`).join('')
+    : '<div class="card empty">Нечего проверять. Всё, что пришло от других, уже разобрано.</div>'}
+    <div class="card"><div class="sec">ЖУРНАЛ РЕШЕНИЙ</div><div class="hist" id="revlog">…</div></div>`;
+}
+async function fillRevLog(){ const el=$('#revlog'); if(!el) return; const L=(await dbGet('kv','revlog'))||[]; el.innerHTML=L.length?[...L].reverse().slice(0,60).map(l=>`<div>${fmtDT(l.t)} — ${esc(l.m)}</div>`).join(''):'<div>Пока пусто</div>'; }
+function updRevBadge(){ const b=$('#bRev'); if(!b) return; b.hidden=!S.admin; const n=$('#revN'); if(n){ n.textContent=QUEUE.length||''; n.hidden=!QUEUE.length; } }
+
+async function revLog(m){ const L=(await dbGet('kv','revlog'))||[]; L.push({t:Date.now(), m}); await dbPut('kv','revlog',L.slice(-500)); }
+
 // ---------------- синхронизация ----------------
 function syncHTML(){
   const ls=S.set.lastSend;
@@ -1094,13 +1428,19 @@ function syncHTML(){
   <div class="card"><div class="sec">ОТЧЁТ</div>
    <button class="btn wide" data-act="report">${ICON.dl} Отчёт: папка с фото по блокам</button>
    <button class="btn wide" data-act="csv" style="margin-top:8px">${ICON.dl} Таблица для Excel (CSV)</button>
-   <button class="btn wide" data-act="invcsv" style="margin-top:8px">${ICON.dl} Состав шкафов (CSV)</button>
+   ${S.admin?`<button class="btn wide" data-act="invcsv" style="margin-top:8px">${ICON.dl} Состав шкафов (CSV)</button>`:''}
    <div class="small mute" style="margin-top:6px">Отчёт — zip-архив: «Залежь → Блок → фото с датой», плюс общий Отчёт.html и таблица. Удобно открывать на ПК.</div></div>
   <div class="card"><div class="sec">ЖУРНАЛ</div><div class="hist">${S.log.length?[...S.log].reverse().slice(0,30).map(l=>`<div>${fmtDT(l.t)} — ${esc(l.m)}</div>`).join(''):'<div>Пока пусто</div>'}</div></div>`;
 }
 let phMode='new';
+async function sealPackage(d, photoEnts){
+  const raw=await deflate(enc8.encode(JSON.stringify(d)));
+  const sig={v:2, dev:S.set.dev, pub:DEVKEY?DEVKEY.pub:null, sig:DEVKEY?await signB(DEVKEY.privateKey, raw):null};
+  if (S.admin && ADM) sig.adm=await signB(ADM.sign, raw);
+  return zipBlob([{name:'data.bin', data:raw}, {name:'sig.json', data:JSON.stringify(sig)}, ...photoEnts]);
+}
 function packageData(withBase){
-  const state={}; for (const [id,s] of S.st) state[id]={f:s.f, visits:s.visits, inv:s.inv||{}};
+  const state={}; for (const [id,s] of S.st) state[id]={f:s.f, visits:s.visits};
   const photos=[...S.photos.values()].map(p=>{ const {noBlob,...m}=p; return m; });
   const d={app:'obhod-h1', ver:1, at:Date.now(), by:S.set.name, dev:S.set.dev, state, photos};
   if (withBase){ d.base={ts:S.baseTs, blocks:[...S.blocks.values()]}; }
@@ -1115,8 +1455,8 @@ async function sendData(){
     let inc=[];
     for (const p of list){ const b=await dbGet('blobs',p.id); if(b){ ents.push({name:'photos/'+p.id+'.jpg', blob:b, crc:p.crc, date:new Date(p.t)}); inc.push(p.id); } }
     d.files=inc;
-    ents.unshift({name:'data.json', data:JSON.stringify(d)});
-    const z=await zipBlob(ents);
+    if (S.admin) d.invx=await makeInvx(); else { const ix=await dbGet('kv','invx'); if(ix) d.invx=ix; const sl=await dbGet('kv','invSealed'); if(sl&&sl.length) d.invs=sl; }
+    const z=await sealPackage(d, ents);
     const now=new Date(); const name=safeName(`обход ${S.set.name} ${dstr()} ${pad(now.getHours())}-${pad(now.getMinutes())}`)+'.zip';
     const mb=(z.size/1048576).toFixed(1);
     const m=openModal(`<h3>Файл готов</h3><div class="small mute" style="margin-bottom:12px">${esc(name)} · ${mb} МБ · фото: ${inc.length}</div>
@@ -1131,45 +1471,94 @@ async function sendData(){
   }catch(e){ console.error(e); toast('Ошибка: '+e.message); }
   if(btn){ btn.disabled=false; btn.innerHTML=ICON.share+' Отправить мои данные'; }
 }
+async function readPackage(z){
+  const db=z.get('data.bin'), sj=z.get('sig.json'), dj=z.get('data.json');
+  if (db && sj){
+    const raw=new Uint8Array(await (await db.blob()).arrayBuffer()); let sig, d;
+    try{ sig=JSON.parse(await (await sj.blob()).text()); d=JSON.parse(dec8.decode(await inflate(raw))); }catch(e){ throw new Error('Файл повреждён'); }
+    let devOk=false;
+    if (sig.pub && sig.sig && sig.dev && d.dev===sig.dev){ try{ const k=await crypto.subtle.importKey('jwk',pubJwk(sig.pub),ECDSA,false,['verify']); devOk=await verifyB(k,raw,sig.sig); }catch(e){} }
+    const admOK = !!sig.adm && await verifyB(await admVerifyKey(), raw, sig.adm);
+    return {d, v:2, devOk, admOK, sig};
+  }
+  if (dj){ let d; try{ d=JSON.parse(await (await dj.blob()).text()); }catch(e){ throw new Error('Файл повреждён'); } return {d, v:1, devOk:false, admOK:false}; }
+  throw new Error('Это не файл обхода');
+}
+async function storeInvx(ix){ if (!(await invxValid(ix))) return false; const cur=await dbGet('kv','invx'); if (!cur || ix.t>cur.t) await dbPut('kv','invx',ix); return true; }
+async function keepSealed(list){ if(!Array.isArray(list)||!list.length) return; const arr=(await dbGet('kv','invSealed'))||[]; const have=new Set(arr.map(x=>x.ct.slice(0,40)));
+  for (const x of list) if (x && x.ct && x.epk && x.iv && !have.has(x.ct.slice(0,40))){ arr.push(x); have.add(x.ct.slice(0,40)); } await dbPut('kv','invSealed',arr); }
 async function importFiles(files){
   if(!files.length) return; persistAsk();
-  let tot={blocks:0, fields:0, visits:0, photos:0, inv:0, base:false, from:new Set()};
+  let tot={blocks:0, fields:0, visits:0, photos:0, inv:0, base:false, from:new Set(), q:0, bad:0, imp:new Set(), key:false};
+  if (S.admin){ await loadQueue(); PEND=(await dbGet('kv','pend'))||{}; }
   for (const f of files){
     try{
-      const z=await unzip(f); const dj=z.get('data.json'); if(!dj) throw new Error('В архиве нет data.json — это не файл обхода');
-      const d=JSON.parse(await (await dj.blob()).text()); if(d.app!=='obhod-h1') throw new Error('Чужой файл');
+      if (/\.json$/i.test(f.name) || f.type==='application/json'){
+        let j=null; try{ j=JSON.parse(await f.text()); }catch(e){}
+        if (j && j.app==='obhod-h1-admin'){ try{ await setAdmin(j); tot.key=true; await revLog('Режим проверки включён на этом устройстве'); continue; }catch(e){} }
+        throw new Error('Чужой файл');
+      }
+      const z=await unzip(f); const P=await readPackage(z), d=P.d; if(d.app!=='obhod-h1') throw new Error('Чужой файл');
+      if (!S.admin){
+        if (P.v===1) throw new Error('файл из старой версии приложения. Пусть отправитель откроет приложение с интернетом (оно обновится) и отправит заново');
+        if (!P.devOk && !P.admOK) throw new Error('файл повреждён');
+      }
+      const trusted = P.admOK;
       if (d.by) tot.from.add(d.by);
-      if (d.base && d.base.blocks && (d.base.ts>S.baseTs || !S.blocks.size)){
+      if (d.base && d.base.blocks && ((trusted || !S.admin) && d.base.ts>S.baseTs || !S.blocks.size)){
         for (const b of d.base.blocks){ S.blocks.set(b.id,b); await dbPut('blocks',b.id,b); }
         S.baseTs=d.base.ts; await dbPut('kv','baseTs',S.baseTs); tot.base=true;
       }
+      if (S.admin && !trusted){
+        let sus = P.v===1 ? 'старый формат, без подписи' : !P.devOk ? 'файл изменён вручную' : '';
+        if (P.v===2 && P.devOk){ const pins=(await dbGet('kv','pins'))||{}; if (pins[P.sig.dev] && pins[P.sig.dev]!==P.sig.pub.x) sus='подпись другого устройства'; else if(!pins[P.sig.dev]){ pins[P.sig.dev]=P.sig.pub.x; await dbPut('kv','pins',pins); } }
+        const from={by:d.by||'', dev:d.dev||'', file:f.name, at:d.at||Date.now(), sus};
+        await adminMerge(d, z, from, tot);
+        const qe = o => { if (qPush2({qid:uid(), at:Date.now(), from, ...o})) tot.q++; };
+        if (d.invx){ try{ if (await invxValid(d.invx)) tot.inv+=mergeInvObj(await openSeal(d.invx.seal)); }catch(e){} }
+        for (const sl of d.invs||[]){ try{ await considerInv(await openSeal(sl), qe); }catch(e){} }
+        await saveQueue();
+        S.log.push({t:Date.now(), m:`Принято: ${f.name}${d.by?' от '+d.by:''}`});
+        continue;
+      }
+      // доверенный файл (или устройство без режима проверки) — обычное слияние
       for (const id in d.state||{}){
         const inc=d.state[id], cur=st(id); let ch=false;
         for (const k in inc.f||{}){ const a=inc.f[k], c=cur.f[k];
-          if (!c || a.t>c.t || (a.t===c.t && String(a.d||'')>String(c.d||''))){ if(!c || JSON.stringify(c)!==JSON.stringify(a)){ cur.f[k]=a; tot.fields++; ch=true; } } }
-        for (const v of inc.visits||[]){ const ex=cur.visits.find(x=>x.id===v.id); if(!ex){ cur.visits.push(v); tot.visits++; ch=true; } else if (v.del && !ex.del){ ex.del=v.del; ch=true; } }
-        if (inc.inv){ const ci=invOf(id);
-          for (const iid in inc.inv){ const a=inc.inv[iid], c=ci[iid];
-            if (!c){ ci[iid]=a; tot.inv++; ch=true; continue; }
-            for (const k in a.f){ const x=a.f[k], y=c.f[k]; if(!y || x.t>y.t || (x.t===y.t && String(x.d||'')>String(y.d||''))){ if(!y || JSON.stringify(x)!==JSON.stringify(y)){ c.f[k]=x; tot.inv++; ch=true; } } } } CAT=null; }
+          if (lww(a,c)){ if(!c || JSON.stringify(c)!==JSON.stringify(a)){ cur.f[k]=a; tot.fields++; ch=true; } }
+          else if (a.s && !c.s && a.t===c.t && a.by===c.by && jv(a.v)===jv(c.v)){ c.s=a.s; ch=true; } }
+        for (const v of inc.visits||[]){ const ex=cur.visits.find(x=>x.id===v.id);
+          if(!ex){ cur.visits.push(v); tot.visits++; ch=true; }
+          else if (v.s && !ex.s && visMsg(id,v)===visMsg(id,ex)){ ex.s=v.s; ch=true; }
+          else if (v.del && !ex.del && !(ex.keep && ex.keep>=v.del)){ ex.del=v.del; if(v.s) ex.s=v.s; ch=true; }
+          else if (v.keep && ex.del && v.keep>ex.del){ ex.del=0; ex.keep=v.keep; if(v.s) ex.s=v.s; ch=true; } }
+        if (S.admin && inc.inv){ tot.inv+=mergeInvObj({[id]:inc.inv}); }
         if (ch){ tot.blocks++; await saveState(id); }
       }
-      const files=new Set(d.files||[]);
+      if (S.admin){ if (d.invx){ try{ if (await invxValid(d.invx)) tot.inv+=mergeInvObj(await openSeal(d.invx.seal)); }catch(e){} } }
+      else { if (d.invx) await storeInvx(d.invx); await keepSealed(d.invs); }
+      const fl=new Set(d.files||[]);
       for (const p of d.photos||[]){
-        let cur=S.photos.get(p.id);
+        let cur=S.photos.get(p.id); const wasDel=!!(cur && cur.del && cur.del.v);
         if (!cur){ cur={...p, noBlob:true}; if(!(p.del&&p.del.v)) tot.photos++; }
-        else for (const k of ['cat','note','del','taken2']) if (p[k] && (!cur[k] || p[k].t>cur[k].t)) cur[k]=p[k];
-        if (cur.noBlob && files.has(p.id) && !(cur.del&&cur.del.v)){ const ent=z.get('photos/'+p.id+'.jpg'); if(ent){ const bl=await ent.blob(); await dbPut('blobs',p.id,new Blob([bl],{type:'image/jpeg'})); delete cur.noBlob; } }
+        else { for (const k of PMK){ if (p[k] && (!cur[k] || p[k].t>cur[k].t)) cur[k]=p[k]; else if (p[k] && cur[k] && p[k].s && !cur[k].s && p[k].t===cur[k].t && jv(p[k].v)===jv(cur[k].v)) cur[k].s=p[k].s; }
+          if (p.s && !cur.s && phMsg(p)===phMsg(cur)) cur.s=p.s; }
+        if (S.admin && PEND[p.id]){ if (PEND[p.id].hasBlob && !(cur.del&&cur.del.v)) delete cur.noBlob; delete PEND[p.id]; }
+        if (wasDel && !(cur.del&&cur.del.v) && !(await dbGet('blobs',p.id))) cur.noBlob=true;
+        if (cur.noBlob && fl.has(p.id) && !(cur.del&&cur.del.v)){ const ent=z.get('photos/'+p.id+'.jpg'); if(ent){ const bl=await ent.blob(); if (await crcOk(bl,p.crc)){ await dbPut('blobs',p.id,new Blob([bl],{type:'image/jpeg'})); delete cur.noBlob; } else tot.bad++; } }
         if (cur.del && cur.del.v){ dbDel('blobs',p.id); dbDel('thumbs',p.id); }
         S.photos.set(p.id,cur); await dbPut('photos',p.id,cur);
       }
+      if (S.admin) await savePend();
       S.log.push({t:Date.now(), m:`Принято: ${f.name}${d.by?' от '+d.by:''}`});
     }catch(e){ console.error(e); toast(f.name+': '+e.message); S.log.push({t:Date.now(), m:'Ошибка импорта '+f.name+': '+e.message}); }
   }
   saveLog();
+  if (tot.imp.size) await revLog('Чужое имя в данных: '+[...tot.imp].filter(Boolean).join(', '));
+  if (tot.key){ render(); infoBox(`<h3>Готово</h3><div>Режим проверки включён на этом устройстве.</div>`); return; }
   render();
-  if (S.set.name && S.blocks.size) infoBox(`<h3>Данные приняты</h3><div>${tot.from.size?'От: <b>'+esc([...tot.from].join(', '))+'</b><br>':''}
-    ${tot.base?'Список блоков обновлён ('+S.blocks.size+')<br>':''}Изменено блоков: <b>${tot.blocks}</b>, полей: ${tot.fields}, отметок обхода: ${tot.visits}<br>Новых фото: <b>${tot.photos}</b>${tot.inv?'<br>Состав шкафов: изменений '+tot.inv:''}</div>`);
+  if (S.set.name && S.blocks.size && (tot.from.size || tot.base)) infoBox(`<h3>Данные приняты</h3><div>${tot.from.size?'От: <b>'+esc([...tot.from].join(', '))+'</b><br>':''}
+    ${tot.base?'Список блоков обновлён ('+S.blocks.size+')<br>':''}Изменено блоков: <b>${tot.blocks}</b>, полей: ${tot.fields}, отметок обхода: ${tot.visits}<br>Новых фото: <b>${tot.photos}</b>${S.admin&&tot.inv?'<br>Состав шкафов: изменений '+tot.inv:''}${tot.bad?'<br>Фото с несовпадающим содержимым отброшено: '+tot.bad:''}</div>${S.admin&&tot.q?`<button class="btn pri wide" data-act="openrev" style="margin-top:12px">На проверку: ${tot.q} — открыть</button>`:''}`);
 }
 
 // ---------------- отчёт и CSV ----------------
@@ -1177,16 +1566,17 @@ function rowData(b){
   const id=b.id, lv=lastVisit(id), gg=gaps(id), sh=gg.bad;
   return {id:b.id, n:b.n, name:b.name, zal:b.zal, extr:b.extr, extr_txt:b.extr_txt, acid:b.acid||0, prog:progShort(id), p1:progVal(id,'prog_tuz_site')||'', p2:progVal(id,'prog_tuz_scada')||'', p3:progVal(id,'prog_turr_site')||'', p4:progVal(id,'prog_turr_scada')||'', plast:(lastVisit(id,'prog')||{}).d||'', last:lv?lv.d:'', by:lv?lv.by:'',
     pct:Math.round(progress(id)*100), model:fv(id,'plc_model')||'', ver:(fv(id,'plc_ver')==='другая'?fv(id,'plc_ver_txt'):fv(id,'plc_ver'))||'', ok:plcOk(fv(id,'plc_ver')),
+    rmodel:fv(id,'rplc_model')||'', rver:(fv(id,'rplc_ver')==='другая'?fv(id,'rplc_ver_txt'):fv(id,'rplc_ver'))||'', fmtz:fv(id,'fm_total_tuz')??'', fmtr:fv(id,'fm_total_turr')??'',
     link:{1:'есть',0:'нет'}[fv(id,'f:L_cab')]||'', dist:fv(id,'dist')??'', turr:fv(id,'turr_need')||'', fmz:fv(id,'fm_tuz')??'', fmr:fv(id,'fm_turr')??'',
     short:sh.join('; '), want:gg.want.join('; '), result:fv(id,'result')||'', note:fv(id,'result_note')||'', cmz:fv(id,'cm_tuz')||'', cmr:fv(id,'cm_turr')||'', photos:photosOf(id).length};
 }
 function csvText(){
-  const H=['№','Блок','Залежь','Извлечено %','H2SO4 т','Прогр. ТУЗ на месте','Прогр. ТУЗ SCADA','Прогр. ТУРР на месте','Прогр. ТУРР SCADA','Программа проверена','Обход оборудования','Кто','Заполнено %','ПЛК','Версия','Подходит','Кабель ТУРР-ТУЗ','Расстояние м','ШУ ТУРР необходим','Расх. не подх. ТУЗ','Расх. не подх. ТУРР','Не хватает','Желательно','Итог','Что мешает','Комментарий ТУЗ','Комментарий ТУРР','Фото шт'];
-  const ids=[...TUZ.flatMap(a=>[a[0], ...(a[4]?[a[4]]:[]), ...(PLACE[a[0]]?[PLACE[a[0]]]:[])]), ...TURR.flatMap(a=>[a[0], ...(a[4]?[a[4]]:[]), ...(PLACE[a[0]]?[PLACE[a[0]]]:[])])];
+  const H=['№','Блок','Залежь','Извлечено %','H2SO4 т','Прогр. ТУЗ на месте','Прогр. ТУЗ SCADA','Прогр. ТУРР на месте','Прогр. ТУРР SCADA','Программа проверена','Обход оборудования','Кто','Заполнено %','ПЛК','Версия','Подходит','ПЛК ТУРР','Версия ТУРР','Кабель ТУРР-ТУЗ','Расстояние м','ШУ ТУРР необходим','Расх. всего ТУЗ','Расх. всего ТУРР','Расх. не подх. ТУЗ','Расх. не подх. ТУРР','Не хватает','Желательно','Итог','Что мешает','Комментарий ТУЗ','Комментарий ТУРР','Фото шт'];
+  const ids=ALLROWS().flatMap(a=>[a[0], ...(a[4]?[a[4]]:[]), ...(PLACE[a[0]]?[PLACE[a[0]]]:[])]);
   const q=v=>{ const s=String(v??''); return /[;"\n\r]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
   const lines=[[...H, ...ids.map(k=>fieldLabel('f:'+k))].map(q).join(';')];
   for (const b of blockList()){ const r=rowData(b);
-    lines.push([r.n,r.name,r.zal,r.extr!=null?fmtNum(r.extr):r.extr_txt,fmtNum(r.acid),r.p1,r.p2,r.p3,r.p4,fmtD(r.plast),fmtD(r.last),r.by,r.pct,r.model,r.ver,r.ok,r.link,r.dist,r.turr,r.fmz,r.fmr,r.short,r.want,r.result,r.note,r.cmz,r.cmr,r.photos,
+    lines.push([r.n,r.name,r.zal,r.extr!=null?fmtNum(r.extr):r.extr_txt,fmtNum(r.acid),r.p1,r.p2,r.p3,r.p4,fmtD(r.plast),fmtD(r.last),r.by,r.pct,r.model,r.ver,r.ok,r.rmodel,r.rver,r.link,r.dist,r.turr,r.fmtz,r.fmtr,r.fmz,r.fmr,r.short,r.want,r.result,r.note,r.cmz,r.cmr,r.photos,
       ...ids.map(k=>fv(b.id,'f:'+k)??'')].map(q).join(';')); }
   return '﻿'+lines.join('\r\n');
 }
@@ -1204,18 +1594,18 @@ async function exportReport(){
         const d=new Date(pdate(p)); let fn=safeName(`${dstr(d)} ${pad(d.getHours())}-${pad(d.getMinutes())} ${p.cat.v}${p.note.v?' - '+p.note.v:''} (${p.by})`);
         let f2=fn, i=2; while(used.has(f2)) f2=fn+' ('+(i++)+')'; used.add(f2);
         ents.push({name:`${root}/${dir}/${f2}.jpg`, blob:bl, crc:p.crc, date:d}); imgs.push({src:`${dir}/${f2}.jpg`, cap:`${fmtDT(pdate(p))} · ${p.cat.v}${p.note.v?' · '+p.note.v:''} · ${p.by}`}); }
-      const items = id => (id===TUZ?TUZ:TURR).map(a=>{ const v=fv(b.id,'f:'+a[0]); const n=need(b,a[0]); const cv=a[4]?fv(b.id,'f:'+a[4]):undefined;
+      const items = list => list.map(a=>{ const v=fv(b.id,'f:'+a[0]); const n=need(b,a[0]); const cv=a[4]?fv(b.id,'f:'+a[4]):undefined;
         return `<tr><td>${esc(a[1])}</td><td class=c>${n||'—'}</td><td class="c ${v===undefined?'':v>=n?'ok':'bad'}">${v??''}</td><td class="c ${cv===0?'bad':''}">${a[4]?({1:'есть',0:'нет'}[cv]||''):''}</td></tr>`; }).join('');
       const txt=[`${b.name}`,`Залежь: ${b.zal}`,`Извлечено: ${r.extr!=null?fmtNum(r.extr)+'%':r.extr_txt}`,`H2SO4: ${fmtNum(r.acid)} т`,`Программа (место/SCADA): ${r.prog}`,`Последний обход: ${fmtD(r.last)} ${r.by}`,
         `ПЛК: ${r.model} ${r.ver} (подходит: ${r.ok})`,`Кабель ТУРР-ТУЗ: ${r.link}, расстояние: ${r.dist} м, ШУ ТУРР необходим: ${r.turr}`,`Не хватает: ${r.short}`,`Желательно: ${r.want}`,`Итог: ${r.result} ${r.note}`,
-        `Комментарий ТУЗ: ${r.cmz}`,`Комментарий ТУРР: ${r.cmr}`,'',...TUZ.map(a=>`ТУЗ ${a[1]}: ${fv(b.id,'f:'+a[0])??'—'} (надо ${need(b,a[0])})`),
+        `Комментарий ТУЗ: ${r.cmz}`,`Комментарий ТУРР: ${r.cmr}`,'',...TUZ.map(a=>`ТУЗ ${a[1]}: ${fv(b.id,'f:'+a[0])??'—'} (надо ${need(b,a[0])})`),...SENS.map(a=>`${a[1]}: ${fv(b.id,'f:'+a[0])??'—'} (подключён к ${fv(b.id,'dd_to_'+a[0])||SENS_DEF[a[0]]})`),
         ...(r.turr==='да'?TURR.map(a=>`ТУРР ${a[1]}: ${fv(b.id,'f:'+a[0])??'—'} (надо ${need(b,a[0])})`):[])].join('\r\n');
       if (r.last || ph.length) ents.push({name:`${root}/${dir}/сведения.txt`, data:'﻿'+txt});
       secs.push(`<section id="b${esc(b.id)}"><h2>${esc(b.name)} <small>залежь ${esc(b.zal)} · <span class="${hiExtr(b)?'red':''}">${r.extr!=null?fmtNum(r.extr)+'%':esc(r.extr_txt||'')}</span> · <span class="${r.acid===0?'red':''}">H₂SO₄ ${fmtNum(r.acid)} т</span></small></h2>
        <p>${r.last?'Обход: <b>'+fmtD(r.last)+'</b>, '+esc(r.by):'<span class=mute>Не обходили</span>'} · Программа (место/SCADA): <b>${esc(r.prog)}</b> · ПЛК: ${esc((r.model+' '+r.ver).trim()||'—')}${r.ok==='нет'?' <span class=red>(не подходит)</span>':''} · ШУ ТУРР необходим: <b>${esc(r.turr||'—')}</b>${r.dist!==''?' ('+esc(r.dist)+' м)':''}</p>
        ${r.short?`<p class=red>Не хватает: ${esc(r.short)}</p>`:''}${r.want?`<p style="color:#a86400">Желательно: ${esc(r.want)}</p>`:''}${r.note?`<p>Что мешает: ${esc(r.note)}</p>`:''}${r.cmz?`<p>ТУЗ: ${esc(r.cmz)}</p>`:''}${r.cmr?`<p>ТУРР: ${esc(r.cmr)}</p>`:''}
-       ${r.last?`<details><summary>Чек-лист</summary><table><tr><th>ТУЗ</th><th>Надо</th><th>Факт</th><th>Кабель</th></tr>${items(TUZ)}</table>${r.turr==='да'?`<table><tr><th>ТУРР</th><th>Надо</th><th>Факт</th><th>Кабель</th></tr>${items(TURR)}</table>`:''}</details>`:''}
-       ${invTable(b.id)}
+       ${r.last?`<details><summary>Чек-лист</summary><table><tr><th>ТУЗ</th><th>Надо</th><th>Факт</th><th>Кабель</th></tr>${items(TUZ)}</table><table><tr><th>Датчики давления</th><th>Надо</th><th>Факт</th><th>Кабель</th></tr>${items(SENS)}</table>${r.turr==='да'?`<table><tr><th>ТУРР</th><th>Надо</th><th>Факт</th><th>Кабель</th></tr>${items(TURR)}</table>`:''}</details>`:''}
+       ${S.admin?invTable(b.id):''}
        ${imgs.length?`<div class=g>${imgs.map(i=>`<figure><a href="${encodeURI(i.src)}"><img loading=lazy src="${encodeURI(i.src)}"></a><figcaption>${esc(i.cap)}</figcaption></figure>`).join('')}</div>`:''}</section>`);
     }
     const rows=blockList().map(b=>{ const r=rowData(b); return `<tr><td>${r.n}</td><td><a href="#b${esc(b.id)}">${esc(r.name)}</a></td><td>${esc(r.zal)}</td><td class="${hiExtr(b)?'red':''}">${r.extr!=null?fmtNum(r.extr)+'%':esc(r.extr_txt||'')}</td><td class="${r.acid===0?'red':''}">${fmtNum(r.acid)}</td><td>${esc(r.prog)}</td><td>${fmtD(r.last)}</td><td>${esc(r.by)}</td><td>${r.pct}%</td><td>${esc(r.turr)}</td><td class=w>${esc(r.short)}</td><td>${r.photos||''}</td><td>${esc(r.result)}</td></tr>`; }).join('');
@@ -1228,7 +1618,7 @@ figure{margin:0}figure img{width:100%;aspect-ratio:4/3;object-fit:cover;border-r
 <h1>Обход блоков — Харасан-1</h1><p class=mute>Выгружено ${fmtDT(Date.now())} · ${esc(S.set.name)} · фото лежат в папках «Залежь → Блок»</p>
 <div class=wrap><table><tr><th>№</th><th>Блок</th><th>Залежь</th><th>Извлечено</th><th>H₂SO₄, т</th><th>Программа</th><th>Обход</th><th>Кто</th><th>Заполнено</th><th>ШУ ТУРР</th><th>Не хватает</th><th>Фото</th><th>Итог</th></tr>${rows}</table></div>
 ${secs.join('')}</body></html>`;
-    ents.unshift({name:`${root}/Отчёт.html`, data:html}, {name:`${root}/Таблица.csv`, data:csvText()}, {name:`${root}/Состав шкафов.csv`, data:invCSV()}, {name:`${root}/IP-реестр.csv`, data:ipCSV()});
+    ents.unshift({name:`${root}/Отчёт.html`, data:html}, {name:`${root}/Таблица.csv`, data:csvText()}, ...(S.admin?[{name:`${root}/Состав шкафов.csv`, data:invCSV()}]:[]), {name:`${root}/IP-реестр.csv`, data:ipCSV()});
     const z=await zipBlob(ents);
     await shareOrSave(z, root+'.zip', 'application/zip', false);
     S.log.push({t:Date.now(), m:`Отчёт выгружен (${(z.size/1048576).toFixed(1)} МБ)`}); saveLog();
@@ -1256,11 +1646,16 @@ function settingsHTML(){
   const vers=plcVersions();
   return `<div class="card"><div class="sec">Я</div>
    <div class="fld"><label for="sName">Имя</label><input type="text" id="sName" value="${esc(S.set.name)}" style="max-width:220px"></div>
-   <div class="fld"><label for="sStale">«Давно не обходили» — через, дней</label><input type="number" id="sStale" inputmode="numeric" value="${S.set.stale}" style="max-width:90px"></div></div>
+   <div class="fld"><label for="sStale">«Давно не обходили» — через, дней</label><input type="number" id="sStale" inputmode="numeric" value="${S.set.stale}" style="max-width:90px"></div>
+   <div class="fld"><span class="l">Подпись на фото («ТУЗ 114»)</span>${segHTML('wmset','', 'wm', ['вкл','выкл'], S.set.wm===false?'выкл':'вкл')}</div></div>
   <div class="card"><div class="sec">ВЕРСИИ ПЛК — ПОДХОДЯТ ЛИ ПОД ПРОГРАММУ</div>
    ${vers.map(v=>`<div class="fld"><span class="l">${esc(v)}</span>${segHTML('set',G,'plcv:'+v,['да','нет'],plcOk(v),'нет')}</div>`).join('')}
    <div class="row2" style="margin-top:8px"><input type="text" id="newVer" placeholder="Новая версия, напр. AG41" style="flex:1"><button class="btn" data-act="addver">Добавить</button></div>
    <div class="small mute" style="margin-top:6px">Эта таблица общая — уходит коллегам вместе с данными.</div></div>
+  ${S.admin?`<div class="card"><div class="sec">ПРОВЕРКА</div>
+   <div class="small">На этом устройстве включён режим проверки. Чужие изменения ждут вашего решения, состав шкафов виден только вам.</div>
+   <button class="btn pri wide" data-act="openrev" style="margin-top:10px">Открыть проверку${QUEUE.length?' · '+QUEUE.length:''}</button>
+   <button class="btn wide" data-act="admoff" style="margin-top:8px">Выключить на этом устройстве</button></div>`:''}
   <div class="card"><div class="sec">ДАННЫЕ</div>
    <div class="small" id="stor">…</div>
    <div class="small mute" style="margin-top:4px">Блоков: ${S.blocks.size} · фото: ${[...S.photos.values()].filter(p=>!(p.del&&p.del.v)).length} · версия приложения ${APP_VER}</div>
@@ -1279,12 +1674,13 @@ document.addEventListener('click', async e=>{
   switch(a){
     case 'open': go('b-'+encodeURIComponent(id)); break;
     case 'flt': S.filter=k; render(); break;
+    case 'wmset': S.set.wm = t.dataset.v!=='выкл'; saveSet(); render(); break;
     case 'hmode': S.set.homeMode=k; S.filter='all'; saveSet(); render(); break;
-    case 'tap': { const n=need(b,k), v=fv(id,'f:'+k); setField(id,'f:'+k, v===undefined||v<n ? Math.max(n,1) : v); refreshBlockParts(id,k); break; }
-    case 'inc': { const v=fv(id,'f:'+k); setField(id,'f:'+k, Math.min(20,(v??0)+1)); refreshBlockParts(id,k); break; }
-    case 'dec': { const v=fv(id,'f:'+k); if (v===undefined) break; if (v===0) clearField(id,'f:'+k); else setField(id,'f:'+k,v-1); refreshBlockParts(id,k); break; }
-    case 'q0': setField(id,'f:'+k,0); refreshBlockParts(id,k); break;
-    case 'inv': go('inv-'+encodeURIComponent(id)); break;
+    case 'tap': { const n=need(b,k), v=fv(id,'f:'+k); setField(id,'f:'+k, v===undefined||v<n ? Math.max(n,1) : v); upd(id,k); break; }
+    case 'inc': { const v=fv(id,'f:'+k); setField(id,'f:'+k, Math.min(20,(v??0)+1)); upd(id,k); break; }
+    case 'dec': { const v=fv(id,'f:'+k); if (v===undefined) break; if (v===0) clearField(id,'f:'+k); else setField(id,'f:'+k,v-1); upd(id,k); break; }
+    case 'q0': setField(id,'f:'+k,0); upd(id,k); break;
+    case 'inv': if(S.admin) go('inv-'+encodeURIComponent(id)); break;
     case 'ipnet': S.ipNet=k; S.ipF='all'; render(); break;
     case 'ipf': S.ipF = S.ipF===k ? 'all' : k; render(); break;
     case 'ipopen': ipForm(k); break;
@@ -1303,7 +1699,7 @@ document.addEventListener('click', async e=>{
     case 'iedit': invForm(id,k); break;
     case 'iquick': { const c=catalog().combos.find(x=>x.name===k)||{name:k}; invForm(id,null,{...c, place:S.invPlace||'ТУЗ'}); break; }
     case 'icopy': invCopy(id); break;
-    case 'invcsv': shareOrSave(new Blob([invCSV()],{type:'text/csv'}), `Состав шкафов ${dstr()}.csv`, 'text/csv', false); break;
+    case 'invcsv': if(S.admin) shareOrSave(new Blob([invCSV()],{type:'text/csv'}), `Состав шкафов ${dstr()}.csv`, 'text/csv', false); break;
     case 'editneed': S.editNeed=!S.editNeed; render(); break;
     case 'ninc': setField(id,'n:'+k, Math.min(20, need(b,k)+1)); refreshBlockParts(id,k); break;
     case 'ndec': setField(id,'n:'+k, Math.max(0, need(b,k)-1)); refreshBlockParts(id,k); break;
@@ -1311,14 +1707,26 @@ document.addEventListener('click', async e=>{
     case 'cab': { const v=Number(t.dataset.v); if (fv(id,'f:'+k)===v) clearField(id,'f:'+k); else setField(id,'f:'+k,v); if(PARENT(k)) refreshBlockParts(id,PARENT(k)); else render(); break; }
     case 'set': { const v=t.dataset.v; if (fv(id,k)===v) clearField(id,k); else setField(id,k,v); render(); break; }
     case 'visit': ensureVisit(id); await saveState(id); toast('Обход оборудования отмечен: '+fmtD(dstr())); render(); break;
+    case 'filled': setField(id,'filled',Date.now()); refreshBlockParts(id); if (wide()) render(); toast('Отмечено: данные заполнены'); break;
     case 'pvisit': ensureVisit(id,'prog'); await saveState(id); toast('Проверка программы отмечена: '+fmtD(dstr())); render(); break;
-    case 'vdel': { const v=st(id).visits.find(x=>x.id===k); if(!v) break; if(await confirmBox(`Удалить отметку «${vKind(v)==='prog'?'программа':'оборудование'}» от ${fmtD(v.d)} (${v.by})?`,'Удалить')){ v.del=Date.now(); await saveState(id); render(); } break; }
-    case 'cat': S.set.curCat=k; saveSet(); document.querySelectorAll('[data-act=cat]').forEach(c=>c.classList.toggle('on',c.dataset.k===k)); break;
+    case 'vdel': { const v=st(id).visits.find(x=>x.id===k); if(!v) break; if(await confirmBox(`Удалить отметку «${vKind(v)==='prog'?'программа':'оборудование'}» от ${fmtD(v.d)} (${v.by})?`,'Удалить')){ v.del=Date.now(); await saveState(id); admSignVisit(id,v); render(); } break; }
+    case 'phcat': S.phCat=k; if (k!=='Все'){ S.set.curCat=k; saveSet(); } { const r=route(); const pc=$('#phcard'); if(pc && r.id){ pc.innerHTML=photoCardHTML(r.id); loadThumbs(); } } break;
+    case 'phdate': S.phDate=k; { const r=route(); const pc=$('#phcard'); if(pc && r.id){ pc.innerHTML=photoCardHTML(r.id); loadThumbs(); } } break;
     case 'cam': photoTarget=id; $('#fCam').value=''; $('#fCam').click(); break;
     case 'gal': photoTarget=id; $('#fGal').value=''; $('#fGal').click(); break;
     case 'pview': viewPhoto(t.dataset.pid); break;
     case 'import': $('#fImp').value=''; $('#fImp').click(); break;
-    case 'wgo': { const n=$('#wName').value.trim(); if(!n){ toast('Введите имя'); return; } S.set.name=n; await saveSet(); if(!S.blocks.size){ toast('Загрузите файл со списком блоков'); return; } render(); break; }
+    case 'qok': case 'qno': await qDecide(k, a==='qok'); render(); break;
+    case 'qwho': S.revWho=k; render(); break;
+    case 'openrev': go('review'); break;
+    case 'qimg': { const bl=await dbGet('blobs',k); if(!bl){ toast('Само фото ещё не пришло — только описание'); break; } const u=URL.createObjectURL(bl); const pm=PEND[k]||{};
+      const m=openModal(`<img src="${u}" alt="" style="width:100%;border-radius:8px;display:block"><div class="small mute" style="margin-top:8px">${esc(pm.by||'')} · снято ${fmtDT(pdate(pm))} · ${esc(catOf(pm))}${pm.note&&pm.note.v?' · '+esc(pm.note.v):''}</div><button class="btn wide" data-m="ok" style="margin-top:10px">Закрыть</button>`);
+      m.onclick=e=>{ if(e.target===m || e.target.closest('[data-m=ok]')){ m.onclick=null; URL.revokeObjectURL(u); closeModal(); } }; break; }
+    case 'qall': { const ok=k==='1'; const L=QUEUE.filter(e=>e.block===id && (!S.revWho || ((e.nu&&e.nu.by)||e.from.by)===S.revWho)); if(!L.length) break;
+      if(!ok && !(await confirmBox(`Отклонить все изменения (${L.length}) по «${blkName(id)}»?`,'Отклонить'))) break;
+      for (const e of L) await qDecide(e.qid, ok, true); toast((ok?'Принято: ':'Отклонено: ')+L.length); render(); break; }
+    case 'admoff': if(await confirmBox('Выключить режим проверки на этом устройстве? Включить снова можно, приняв файл ключа.','Выключить')){ await dbDel('kv','adminJwk'); S.admin=false; ADM=null; await sealLocalInv(); render(); } break;
+    case 'wgo': { const n=$('#wName').value.trim(); if(!n){ toast('Введите имя'); return; } if(reservedName(n) && !S.admin){ toast('Это имя уже занято'); return; } S.set.name=n; await saveSet(); if(!S.blocks.size){ toast('Загрузите файл со списком блоков'); return; } render(); break; }
     case 'phmode': phMode=t.dataset.v; t.parentElement.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===t)); break;
     case 'send': sendData(); break;
     case 'report': exportReport(); break;
@@ -1330,6 +1738,9 @@ document.addEventListener('click', async e=>{
 });
 // пустое значение хранится как v:null, чтобы очистка тоже синхронизировалась
 function clearField(id,k){ setField(id,k,null); }
+// эти позиции включают/выключают другие строки — перерисовать карточку целиком
+const TRIG = new Set(['T_exist','T_cab','R_cab','T_mast','R_mast','T_plc','R_plc']);
+const upd = (id,k) => TRIG.has(k) ? render() : refreshBlockParts(id,k);
 document.addEventListener('input', debounce(e=>{
   const t=e.target;
   if (t.id==='ipQ'){ S.ipQ=t.value; const sel=t.selectionStart; render(); const e2=$('#ipQ'); if(e2){ e2.focus(); try{ e2.setSelectionRange(sel,sel); }catch(_){} } return; }
@@ -1338,7 +1749,7 @@ document.addEventListener('input', debounce(e=>{
     if (t.dataset.num){ v = v==='' ? null : Number(v); if (v!=null && isNaN(v)) return; }
     if (v===null || v==='') clearField(id,k); else setField(id,k,v);
     if (id!==G) refreshBlockParts(id); return; }
-  if (t.id==='sName'){ const n=t.value.trim(); if(n){ S.set.name=n; saveSet(); } }
+  if (t.id==='sName'){ const n=t.value.trim(); if(n){ if(reservedName(n) && !S.admin){ toast('Это имя уже занято'); return; } S.set.name=n; saveSet(); } }
   if (t.id==='sStale'){ const n=parseInt(t.value); if(n>0){ S.set.stale=n; saveSet(); } }
 },350));
 document.addEventListener('change', e=>{
@@ -1351,7 +1762,7 @@ document.addEventListener('change', e=>{
   if (t.id==='fImp') importFiles([...t.files]);
 });
 $('#bBack').onclick=()=>{ if(history.length>1) history.back(); else go(''); };
-$('#bIp').onclick=()=>go('ip'); $('#bSync').onclick=()=>go('sync'); $('#bSet').onclick=()=>go('settings'); $('#bTable').onclick=()=>go('table');
+$('#bIp').onclick=()=>go('ip'); $('#bRev').onclick=()=>go('review'); $('#bSync').onclick=()=>go('sync'); $('#bSet').onclick=()=>go('settings'); $('#bTable').onclick=()=>go('table');
 window.addEventListener('hashchange', render);
 let lastWide=null; window.addEventListener('resize', debounce(()=>{ if(wide()!==lastWide){ lastWide=wide(); render(); } },200));
 
