@@ -104,6 +104,7 @@ textarea{min-height:70px;resize:vertical}
 .cab .seg button{min-height:34px;min-width:44px;font-size:13px}
 .off{opacity:.45;pointer-events:none}
 .vrow{display:flex;align-items:center;justify-content:space-between;gap:6px}.vdel{border:0;background:transparent;color:var(--mute);font-size:18px;width:32px;height:28px}
+.iphead{margin-bottom:6px}.ipinp{font-family:ui-monospace,Consolas,monospace;font-weight:800;font-size:20px!important;flex:1;max-width:260px}
 .seg.mode{display:flex;margin-bottom:8px}.seg.mode button{flex:1;min-height:40px}
 .pills{display:flex;flex-direction:column;gap:3px;align-items:flex-end}.prog2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .netrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}.netrow .nl{font-size:12px;font-weight:800;color:var(--pri);margin-right:2px}
@@ -192,7 +193,7 @@ tr:hover td{background:var(--pri2)}
 <input type="file" id="fImp" accept=".zip,application/zip,application/x-zip-compressed" multiple hidden>
 <script>
 {
-const APP_VER = '1.7';
+const APP_VER = '1.8';
 // ---------------- чек-лист ----------------
 const TUZ = [
  ['T_exist','Наличие ТУЗ',1,1],['T_power','Питание в блоке',1,1],['T_cab','Шкаф управления (ШУ)',1,1],['T_mast','Мачта',1,1],
@@ -911,7 +912,8 @@ function ipForm(ip, preset, chainNext){
   const places=[...new Set([...blockList().map(b=>'ТУЗ и ТУРР '+b.id), ...Object.keys(st(G).f).filter(k=>k.startsWith('ip:')).map(k=>st(G).f[k].v&&st(G).f[k].v.place).filter(Boolean)])];
   const antNet=nets().find(x=>x.kind==='ant'), freeAnt=antNet?freeList(antNet.net,2,1)[0]:null;
   const F=(id,lb,val,extra='')=>`<div><label class="small b" for="${id}">${lb}</label><input type="text" id="${id}" value="${esc(val)}" autocomplete="off" ${extra}></div>`;
-  const m=openModal(`<h3>${esc(ip)} <span class="pill ${IPST[s][1]}">${IPST[s][0]}</span></h3>
+  const m=openModal(`<div class="iphead"><label class="small b" for="fIp">IP-адрес</label><div class="row2"><input type="text" id="fIp" value="${esc(ip)}" inputmode="decimal" autocomplete="off" class="ipinp"><span class="pill ${IPST[s][1]}">${IPST[s][0]}</span></div>
+   <div class="small mute" id="fIpHint">${r.place||r.type?'Ошиблись адресом? Исправьте здесь — запись переедет на новый адрес, старый освободится.':''}</div></div>
    ${sc&&o in sc.m?`<div class="small" style="margin-bottom:6px">В скане от ${esc(fmtD(sc.d))}: <b>отвечает</b>${sc.m[o]?' · MAC '+esc(fmtMac(sc.m[o])):''}</div>`:''}
    ${kind!=='ant'?`<label class="small b">Тип</label><div class="seg" id="fType">${IP_TYPES.map(t=>`<button class="${v('type')===t?'on':''}" data-ty="${t}">${t}</button>`).join('')}</div>`:''}
    <div class="g2">${F('fPlace', kind==='ant'?'Блок / где стоит':'Блок / место', v('place'),'list="dlPl"')}
@@ -944,14 +946,43 @@ function ipForm(ip, preset, chainNext){
     const rec = kind==='ant'
       ? {place:val('fPlace'), plcs:val('fPlcs'), ap:val('fAp'), login:val('fLogin'), pass:val('fPass'), wpa:val('fWpa'), prev:val('fPrev'), check:val('fCheck'), note:val('fNote')}
       : {type, place:val('fPlace'), tia:val('fTia'), model:val('fModel'), mac:val('fMac')?fmtMac(val('fMac')):'', ant:val('fAnt'), prev:val('fPrev'), check:val('fCheck'), note:val('fNote')};
+    // смена адреса
+    let raw=val('fIp').replace(/\s+/g,''), nip=ip;
+    if (raw && raw!==ip){
+      const p=ip.split('.');
+      if (/^\.?\d{1,3}$/.test(raw)) nip=p.slice(0,3).join('.')+'.'+raw.replace('.','');
+      else if (/^\d{1,3}\.\d{1,3}$/.test(raw)) nip=p.slice(0,2).join('.')+'.'+raw;
+      else nip=raw;
+      const q=nip.split('.').map(Number);
+      if (q.length!==4 || q.some(x=>isNaN(x)||x<0||x>255) || q[3]<1 || q[3]>254){ $m('#fWarn').innerHTML='<div class="short" style="margin-top:10px">Неверный адрес: '+esc(raw)+'</div>'; return; }
+      const nnet=q.slice(0,3).join('.'), tn=nets().find(x=>x.net===nnet);
+      if (!tn){ $m('#fWarn').innerHTML='<div class="short" style="margin-top:10px">Подсети '+esc(nnet)+' нет в реестре. Сначала добавьте её («+ подсеть»).</div>'; return; }
+      if (tn.kind==='ant' ? kind!=='ant' : kind==='ant'){ $m('#fWarn').innerHTML='<div class="short" style="margin-top:10px">Нельзя перенести между подсетью антенн и подсетью ПЛК — у них разные поля.</div>'; return; }
+      const tr=ipRec(nip), ts=ipStatus(nip);
+      if (tr && (tr.place || tr.type)){ $m('#fWarn').innerHTML=`<div class="short" style="margin-top:10px">${esc(nip)} уже занят: ${esc(recSum(tr))}. Сначала освободите его.</div>`; return; }
+      if (ts==='conf' && !forced){ $m('#fWarn').innerHTML=`<div class="short" style="margin-top:10px">${esc(nip)} отвечает в скане — на нём может что-то стоять.<div class="row2" style="margin-top:8px"><button class="btn" data-w="force" style="flex:1">Всё равно перенести</button></div></div>`; return; }
+    }
     if (!forced){ const w=[];
-      for (const k in st(G).f){ if(!k.startsWith('ip:')||k==='ip:'+ip) continue; const x=st(G).f[k].v; if(!x) continue;
+      for (const k in st(G).f){ if(!k.startsWith('ip:')||k==='ip:'+ip||k==='ip:'+nip) continue; const x=st(G).f[k].v; if(!x) continue;
         if (rec.mac && x.mac && normMac(x.mac)===normMac(rec.mac)) w.push('MAC '+rec.mac+' уже записан на '+k.slice(3));
         if (rec.tia && x.tia && norm(x.tia)===norm(rec.tia) && x.place) w.push('Имя «'+rec.tia+'» уже есть на '+k.slice(3)); }
       if (sc && o in sc.m && !r.place && rec.place) w.push('Этот адрес отвечает в скане — возможно, на нём уже что-то стоит');
       if (w.length){ $m('#fWarn').innerHTML=`<div class="short" style="margin-top:10px">${w.map(esc).join('<br>')}<div class="row2" style="margin-top:8px"><button class="btn" data-w="force" style="flex:1">Всё равно сохранить</button></div></div>`; return; } }
-    setIp(ip, rec, r.place||r.type ? 'Изменение' : 'Занят');
-    m.onclick=null; closeModal(); toast('Сохранено: '+ip); render();
+    if (nip!==ip){
+      const tr=ipRec(nip); if (tr && tr.prev && !rec.prev) rec.prev=tr.prev;
+      setIp(nip, rec, 'Адрес изменён: был '+ip);
+      if (r.place||r.type||r.plcs) setIp(ip, null, 'Перенесён на '+nip);
+      // обновить ссылки: антенна у ПЛК/HMI и «ПЛК/HMI блока» у антенны
+      const os=ipShort(ip), ns=ipShort(nip);
+      for (const k in st(G).f){ if(!k.startsWith('ip:')) continue; const x=st(G).f[k].v; if(!x) continue; let ch=false; const y={...x};
+        if (y.ant===ip){ y.ant=nip; ch=true; }
+        if (y.plcs && new RegExp('(^|[^\\d.])'+os.replace('.','\\.')+'(?![\\d])').test(y.plcs)){ y.plcs=y.plcs.replace(new RegExp('(^|[^\\d.])'+os.replace('.','\\.')+'(?![\\d])','g'),'$1'+ns); ch=true; }
+        if (ch) setIp(k.slice(3), y, 'Ссылка обновлена: '+os+' → '+ns); }
+      m.onclick=null; closeModal(); toast('Адрес изменён: '+ip+' → '+nip); render();
+    } else {
+      setIp(ip, rec, r.place||r.type ? 'Изменение' : 'Занят');
+      m.onclick=null; closeModal(); toast('Сохранено: '+ip); render();
+    }
     if (chainNext && chainNext.length){ const [nx,...rest]=chainNext; setTimeout(()=>ipForm(nx[0], {...nx[1], place:nx[1].place||rec.place}, rest),250); }
   };
 }
@@ -1025,7 +1056,8 @@ function netRowHTML(id){
   const {L,out,isAnt}=netSuggest(id);
   const chip = x => { const ty=isAnt(x.ip)?'Антенна':(x.r.type||'IP'); const s=ipStatus(x.ip);
     return `<button class="ipchip ${s==='chk'||s==='conf'?'warn':''}" data-act="ipopen" data-k="${esc(x.ip)}"><small>${esc(ty)}</small>${esc(ipShort(x.ip))}</button>`; };
-  return `<div class="netrow"><span class="nl">Сеть</span>${L.map(chip).join('')}
+  const rank = x => isAnt(x.ip) ? 3 : x.r.type==='ПЛК' ? 1 : x.r.type==='HMI' ? 2 : 4;
+  return `<div class="netrow"><span class="nl">Сеть</span>${[...L].sort((a,b)=>rank(a)-rank(b)).map(chip).join('')}
     ${out.map(x=>`<button class="ipchip sug" data-act="ipsug" data-id="${esc(id)}" data-k="${esc(x.t)}"><small>+ ${esc(x.t)}</small>${esc(ipShort(x.ip))}?</button>`).join('')}
     ${!L.length&&!out.length?'<span class="small mute">нет свободных адресов</span>':''}</div>
     ${out.length?`<div class="small mute" style="margin-top:2px">${L.length?'Не хватает адресов':'IP ещё не выдан'} — нажмите на предложенный, он заполнится сам.</div>`:''}`;
