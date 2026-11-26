@@ -102,6 +102,14 @@ textarea{min-height:70px;resize:vertical}
 .cab{display:flex;align-items:center;gap:8px;margin-top:6px;padding-left:14px;font-size:14px;color:var(--mute)}
 .cab .seg button{min-height:34px;min-width:44px;font-size:13px}
 .off{opacity:.45;pointer-events:none}
+.netrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}.netrow .nl{font-size:12px;font-weight:800;color:var(--pri);margin-right:2px}
+.ipchip{display:inline-flex;flex-direction:column;align-items:flex-start;line-height:1.1;padding:5px 10px;border-radius:10px;border:1px solid var(--line);background:var(--pri2);font-family:ui-monospace,Consolas,monospace;font-weight:800;font-size:15px;color:var(--pri)}
+.ipchip small{font-family:system-ui,sans-serif;font-weight:600;font-size:10px;color:var(--mute)}
+.ipchip.sug{background:transparent;border:1.5px dashed var(--pri);opacity:.9}.ipchip.warn{border-color:var(--warn);background:var(--warnbg);color:var(--warn)}
+.pgrid{display:grid;grid-template-columns:minmax(0,1fr) 88px 88px;gap:6px;align-items:center;margin-top:12px}
+.pgrid .ph{font-size:11px;color:var(--mute);text-align:center;font-weight:700}.pgrid .pl{font-weight:600;font-size:15px}
+.pc{min-height:40px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-weight:700;font-size:14px;color:var(--mute)}
+.pc.y{background:var(--okbg);border-color:var(--ok);color:var(--ok)}.pc.n{background:var(--badbg);border-color:var(--bad);color:var(--bad)}.pc.p{background:var(--warnbg);border-color:var(--warn);color:var(--warn)}
 .ipstat{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.ipstat .pill{border:0;cursor:pointer;font-size:12px}.ipstat .pill.sel{outline:2px solid var(--pri)}
 .bigip{font-size:24px;font-weight:800;font-family:ui-monospace,Consolas,monospace;letter-spacing:-.02em}
 .ipmap{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:2px;margin-top:4px}
@@ -180,7 +188,7 @@ tr:hover td{background:var(--pri2)}
 <input type="file" id="fImp" accept=".zip,application/zip,application/x-zip-compressed" multiple hidden>
 <script>
 {
-const APP_VER = '1.4';
+const APP_VER = '1.5';
 // ---------------- чек-лист ----------------
 const TUZ = [
  ['T_exist','Наличие ТУЗ',1,1],['T_power','Питание в блоке',1,1],['T_cab','Шкаф управления (ШУ)',1,1],['T_mast','Мачта',1,1],
@@ -209,7 +217,12 @@ const PHOTO_CATS = ['ТУЗ','ТУРР','Шкаф','Антенна','Расхо�
 const DEF_PLCV = {AG40:'да', AG31:'нет', AG30:'нет', AE30:'нет'};
 const FIELD_LB = {plc_model:'ПЛК ТУЗ', plc_ver:'Версия ПЛК', link:'Кабель ТУРР–ТУЗ', dist:'Расстояние ТУЗ–ТУРР', turr_need:'ШУ в ТУРР необходим',
  fm_tuz:'Расх. не подходят (ТУЗ)', fm_turr:'Расх. не подходят (ТУРР)', cm_tuz:'Комментарий ТУЗ', cm_turr:'Комментарий ТУРР',
- result:'Итог', result_note:'Что мешает', prog:'Программа залита'};
+ result:'Итог', result_note:'Что мешает', prog:'Программа залита',
+ prog_tuz_site:'Программа ТУЗ на месте', prog_tuz_scada:'Программа ТУЗ в SCADA', prog_turr_site:'Программа ТУРР на месте', prog_turr_scada:'Программа ТУРР в SCADA'};
+const PROG_CYCLE=[undefined,'да','нет','частично'];
+const progVal=(id,k)=>{ const v=fv(id,k); if(v!==undefined) return v; return k==='prog_tuz_site' ? fv(id,'prog') : undefined; };
+const pv1 = v => v==='да'?'да':v==='нет'?'нет':v==='частично'?'част.':'—';
+const progShort = id => `ТУЗ ${pv1(progVal(id,'prog_tuz_site'))}/${pv1(progVal(id,'prog_tuz_scada'))} · ТУРР ${pv1(progVal(id,'prog_turr_site'))}/${pv1(progVal(id,'prog_turr_scada'))}`;
 function fieldLabel(k){ if (k.startsWith('n:')) return 'Надо — '+fieldLabel('f:'+k.slice(2)); if (k.startsWith('f:')) { const id=k.slice(2); if (ITEM[id]) return ITEM[id].sec+': '+ITEM[id].lb; if (CABLE_OF[id]) return 'Кабель: '+ITEM[CABLE_OF[id]].lb; if (PLACE_OF[id]) return 'Место под датчик: '+ITEM[PLACE_OF[id]].lb; } return FIELD_LB[k]||k; }
 
 // ---------------- утилиты ----------------
@@ -453,9 +466,11 @@ function blockHTML(id){
   <div class="info"><div><small>Залежь</small><b>${esc(b.zal)}</b></div><div><small>Запуск</small><b>${esc(fmtD(b.launch).replace(/\.(\d\d)(\d\d)$/,'.$2'))}</b></div>
    <div><small>Отк. скв.</small><b>${esc(b.otk)}</b></div><div><small>Зак. скв.</small><b>${esc(b.zak)}</b></div>
    <div class="${acid===0?'zero':''}"><small>H₂SO₄, т</small><b>${fmtNum(acid)}</b></div></div>
+  <div id="netrow">${netRowHTML(id)}</div>
+  <div class="pgrid"><span></span><span class="ph">На месте</span><span class="ph">SCADA</span>
+   ${[['tuz','ТУЗ'],['turr','ТУРР']].map(([x,t])=>`<span class="pl">Программа ${t}</span>${['site','scada'].map(w=>{ const k='prog_'+x+'_'+w, v=progVal(id,k); return `<button class="pc ${v==='да'?'y':v==='нет'?'n':v==='частично'?'p':''}" data-act="pcyc" data-id="${esc(id)}" data-k="${k}">${esc(v||'—')}</button>`; }).join('')}`).join('')}</div>
   ${b.shared?`<div class="note">Общий ТУЗ с блоком ${esc(b.shared)}</div>`:''}
   ${b.issues?`<div class="note"><b>Ранее:</b> ${esc(b.issues)}</div>`:''}
-  <div class="fld" style="margin-top:6px"><span class="l">Программа залита</span>${segHTML('set',id,'prog',['да','нет','частично'],fv(id,'prog'),'нет')}</div>
   <div class="visit"><span class="small" id="lastv">${lastvHTML(id)}</span>
    <button class="btn" data-act="visit" data-id="${esc(id)}" style="margin-left:auto">${ICON.check} Обход сегодня</button></div></div>
 
@@ -477,7 +492,6 @@ function blockHTML(id){
 
   <div class="card ${tn==='да'?'':'off'}" id="turr"><div class="sech"><div class="sec">ТУРР ${tn==='да'?'':'— заполняется, если ШУ в ТУРР необходим'}</div>${tn==='да'?needBtn():''}</div>${tn==='да'?needHint():''}${TURR.map(a=>itemHTML(id,b,a[0])).join('')}</div>
 
-  ${blockIpHTML(id)}
   <div class="card"><button class="btn wide" data-act="inv" data-id="${esc(id)}" style="justify-content:space-between"><span>Состав шкафа</span><span class="mute small">ТУЗ ${invItems(id,'ТУЗ').length} · ТУРР ${invItems(id,'ТУРР').length} поз. ›</span></button></div>
   <div class="card"><div class="sec">РАСХОДОМЕРЫ, НЕ ПОДЛЕЖАЩИЕ АВТОМАТИЗАЦИИ</div>
    ${['fm_tuz','fm_turr'].map((k,i)=>`<div class="fld"><span class="l">${i?'ТУРР':'ТУЗ'}, шт</span><input type="number" inputmode="numeric" data-inp="${k}" data-num="1" data-id="${esc(id)}" value="${esc(fv(id,k)??'')}" style="max-width:100px"></div>`).join('')}</div>
@@ -906,7 +920,7 @@ function ipForm(ip, preset, chainNext){
       if (w.length){ $m('#fWarn').innerHTML=`<div class="short" style="margin-top:10px">${w.map(esc).join('<br>')}<div class="row2" style="margin-top:8px"><button class="btn" data-w="force" style="flex:1">Всё равно сохранить</button></div></div>`; return; } }
     setIp(ip, rec, r.place||r.type ? 'Изменение' : 'Занят');
     m.onclick=null; closeModal(); toast('Сохранено: '+ip); render();
-    if (chainNext) setTimeout(()=>ipForm(chainNext, {type:'HMI', place:rec.place}),250);
+    if (chainNext && chainNext.length){ const [nx,...rest]=chainNext; setTimeout(()=>ipForm(nx[0], {...nx[1], place:nx[1].place||rec.place}, rest),250); }
   };
 }
 function ipAddNet(){
@@ -962,6 +976,36 @@ function ipCSV(){
   for (const n of nets()) for (let o=1;o<=254;o++){ const ip=n.net+'.'+o, r=ipRec(ip)||{}, s=ipStatus(ip); if(s==='free'&&!r.prev) continue;
     lines.push([ip,IPST[s][0],r.type,r.place,r.tia,r.model,r.mac,r.ant,r.plcs,r.ap,r.login,r.pass,r.wpa,r.prev,r.check,r.note].map(q).join(';')); }
   return '﻿'+lines.join('\r\n');
+}
+function netSuggest(id){
+  const L=ipsOfBlock(id), pn=nets().find(x=>x.kind==='plc'), an=nets().find(x=>x.kind==='ant');
+  const isAnt = ip => an && ip.startsWith(an.net+'.');
+  const plc=L.find(x=>!isAnt(x.ip) && x.r.type==='ПЛК'), hmi=L.find(x=>!isAnt(x.ip) && x.r.type==='HMI'), ant=L.find(x=>isAnt(x.ip));
+  const out=[]; const place='ТУЗ и ТУРР '+id;
+  const antIp = !ant && an ? (freeList(an.net,2,1)[0]!=null ? an.net+'.'+freeList(an.net,2,1)[0] : null) : null;
+  if (pn && !plc && !hmi){ const o=freePair(pn.net,2); if(o!=null){ out.push({t:'ПЛК', ip:pn.net+'.'+o}); out.push({t:'HMI', ip:pn.net+'.'+(o+1)}); } }
+  else if (pn && plc && !hmi){ const o=+plc.ip.split('.').pop()+1; const ip = o<=254 && ipStatus(pn.net+'.'+o)==='free' ? pn.net+'.'+o : (freeList(pn.net,2,1)[0]!=null ? pn.net+'.'+freeList(pn.net,2,1)[0] : null); if(ip) out.push({t:'HMI', ip}); }
+  else if (pn && !plc && hmi){ const o=freeList(pn.net,2,1)[0]; if(o!=null) out.push({t:'ПЛК', ip:pn.net+'.'+o}); }
+  if (antIp) out.push({t:'Антенна', ip:antIp});
+  return {L, out, place, isAnt};
+}
+function netRowHTML(id){
+  const {L,out,isAnt}=netSuggest(id);
+  const chip = x => { const ty=isAnt(x.ip)?'Антенна':(x.r.type||'IP'); const s=ipStatus(x.ip);
+    return `<button class="ipchip ${s==='chk'||s==='conf'?'warn':''}" data-act="ipopen" data-k="${esc(x.ip)}"><small>${esc(ty)}</small>${esc(ipShort(x.ip))}</button>`; };
+  return `<div class="netrow"><span class="nl">Сеть</span>${L.map(chip).join('')}
+    ${out.map(x=>`<button class="ipchip sug" data-act="ipsug" data-id="${esc(id)}" data-k="${esc(x.t)}"><small>+ ${esc(x.t)}</small>${esc(ipShort(x.ip))}?</button>`).join('')}
+    ${!L.length&&!out.length?'<span class="small mute">нет свободных адресов</span>':''}</div>
+    ${out.length?`<div class="small mute" style="margin-top:2px">${L.length?'Не хватает адресов':'IP ещё не выдан'} — нажмите на предложенный, он заполнится сам.</div>`:''}`;
+}
+function ipSuggestStart(id, which){
+  const {out, place}=netSuggest(id); const by=t=>out.find(x=>x.t===t);
+  const plc=by('ПЛК'), hmi=by('HMI'), ant=by('Антенна');
+  const q=[];
+  const plcsTxt=[plc,hmi].filter(Boolean).map(x=>ipShort(x.ip)).join(' / ');
+  if (which==='Антенна') q.push([ant.ip,{place, plcs:plcsTxt||ipsOfBlock(id).filter(x=>!x.ip.startsWith('192.168.22.')).map(x=>ipShort(x.ip)).join(' / ')}]);
+  else { if (plc) q.push([plc.ip,{type:'ПЛК', place, ant:ant?ant.ip:''}]); if (hmi) q.push([hmi.ip,{type:'HMI', place, ant:ant?ant.ip:''}]); if (ant) q.push([ant.ip,{place, plcs:plcsTxt}]); }
+  if (!q.length) return; const [first,...rest]=q; ipForm(first[0], first[1], rest);
 }
 function blockIpHTML(id){
   const L=ipsOfBlock(id);
@@ -1067,18 +1111,18 @@ async function importFiles(files){
 // ---------------- отчёт и CSV ----------------
 function rowData(b){
   const id=b.id, lv=lastVisit(id), gg=gaps(id), sh=gg.bad;
-  return {id:b.id, n:b.n, name:b.name, zal:b.zal, extr:b.extr, extr_txt:b.extr_txt, acid:b.acid||0, prog:fv(id,'prog')||'', last:lv?lv.d:'', by:lv?lv.by:'',
+  return {id:b.id, n:b.n, name:b.name, zal:b.zal, extr:b.extr, extr_txt:b.extr_txt, acid:b.acid||0, prog:progShort(id), p1:progVal(id,'prog_tuz_site')||'', p2:progVal(id,'prog_tuz_scada')||'', p3:progVal(id,'prog_turr_site')||'', p4:progVal(id,'prog_turr_scada')||'', last:lv?lv.d:'', by:lv?lv.by:'',
     pct:Math.round(progress(id)*100), model:fv(id,'plc_model')||'', ver:(fv(id,'plc_ver')==='другая'?fv(id,'plc_ver_txt'):fv(id,'plc_ver'))||'', ok:plcOk(fv(id,'plc_ver')),
     link:{1:'есть',0:'нет'}[fv(id,'f:L_cab')]||'', dist:fv(id,'dist')??'', turr:fv(id,'turr_need')||'', fmz:fv(id,'fm_tuz')??'', fmr:fv(id,'fm_turr')??'',
     short:sh.join('; '), want:gg.want.join('; '), result:fv(id,'result')||'', note:fv(id,'result_note')||'', cmz:fv(id,'cm_tuz')||'', cmr:fv(id,'cm_turr')||'', photos:photosOf(id).length};
 }
 function csvText(){
-  const H=['№','Блок','Залежь','Извлечено %','H2SO4 т','Программа залита','Последний обход','Кто','Заполнено %','ПЛК','Версия','Подходит','Кабель ТУРР-ТУЗ','Расстояние м','ШУ ТУРР необходим','Расх. не подх. ТУЗ','Расх. не подх. ТУРР','Не хватает','Желательно','Итог','Что мешает','Комментарий ТУЗ','Комментарий ТУРР','Фото шт'];
+  const H=['№','Блок','Залежь','Извлечено %','H2SO4 т','Прогр. ТУЗ на месте','Прогр. ТУЗ SCADA','Прогр. ТУРР на месте','Прогр. ТУРР SCADA','Последний обход','Кто','Заполнено %','ПЛК','Версия','Подходит','Кабель ТУРР-ТУЗ','Расстояние м','ШУ ТУРР необходим','Расх. не подх. ТУЗ','Расх. не подх. ТУРР','Не хватает','Желательно','Итог','Что мешает','Комментарий ТУЗ','Комментарий ТУРР','Фото шт'];
   const ids=[...TUZ.flatMap(a=>[a[0], ...(a[4]?[a[4]]:[]), ...(PLACE[a[0]]?[PLACE[a[0]]]:[])]), ...TURR.flatMap(a=>[a[0], ...(a[4]?[a[4]]:[]), ...(PLACE[a[0]]?[PLACE[a[0]]]:[])])];
   const q=v=>{ const s=String(v??''); return /[;"\n\r]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
   const lines=[[...H, ...ids.map(k=>fieldLabel('f:'+k))].map(q).join(';')];
   for (const b of blockList()){ const r=rowData(b);
-    lines.push([r.n,r.name,r.zal,r.extr!=null?fmtNum(r.extr):r.extr_txt,fmtNum(r.acid),r.prog,fmtD(r.last),r.by,r.pct,r.model,r.ver,r.ok,r.link,r.dist,r.turr,r.fmz,r.fmr,r.short,r.want,r.result,r.note,r.cmz,r.cmr,r.photos,
+    lines.push([r.n,r.name,r.zal,r.extr!=null?fmtNum(r.extr):r.extr_txt,fmtNum(r.acid),r.p1,r.p2,r.p3,r.p4,fmtD(r.last),r.by,r.pct,r.model,r.ver,r.ok,r.link,r.dist,r.turr,r.fmz,r.fmr,r.short,r.want,r.result,r.note,r.cmz,r.cmr,r.photos,
       ...ids.map(k=>fv(b.id,'f:'+k)??'')].map(q).join(';')); }
   return '﻿'+lines.join('\r\n');
 }
@@ -1098,13 +1142,13 @@ async function exportReport(){
         ents.push({name:`${root}/${dir}/${f2}.jpg`, blob:bl, crc:p.crc, date:d}); imgs.push({src:`${dir}/${f2}.jpg`, cap:`${fmtDT(pdate(p))} · ${p.cat.v}${p.note.v?' · '+p.note.v:''} · ${p.by}`}); }
       const items = id => (id===TUZ?TUZ:TURR).map(a=>{ const v=fv(b.id,'f:'+a[0]); const n=need(b,a[0]); const cv=a[4]?fv(b.id,'f:'+a[4]):undefined;
         return `<tr><td>${esc(a[1])}</td><td class=c>${n||'—'}</td><td class="c ${v===undefined?'':v>=n?'ok':'bad'}">${v??''}</td><td class="c ${cv===0?'bad':''}">${a[4]?({1:'есть',0:'нет'}[cv]||''):''}</td></tr>`; }).join('');
-      const txt=[`${b.name}`,`Залежь: ${b.zal}`,`Извлечено: ${r.extr!=null?fmtNum(r.extr)+'%':r.extr_txt}`,`H2SO4: ${fmtNum(r.acid)} т`,`Программа залита: ${r.prog}`,`Последний обход: ${fmtD(r.last)} ${r.by}`,
+      const txt=[`${b.name}`,`Залежь: ${b.zal}`,`Извлечено: ${r.extr!=null?fmtNum(r.extr)+'%':r.extr_txt}`,`H2SO4: ${fmtNum(r.acid)} т`,`Программа (место/SCADA): ${r.prog}`,`Последний обход: ${fmtD(r.last)} ${r.by}`,
         `ПЛК: ${r.model} ${r.ver} (подходит: ${r.ok})`,`Кабель ТУРР-ТУЗ: ${r.link}, расстояние: ${r.dist} м, ШУ ТУРР необходим: ${r.turr}`,`Не хватает: ${r.short}`,`Желательно: ${r.want}`,`Итог: ${r.result} ${r.note}`,
         `Комментарий ТУЗ: ${r.cmz}`,`Комментарий ТУРР: ${r.cmr}`,'',...TUZ.map(a=>`ТУЗ ${a[1]}: ${fv(b.id,'f:'+a[0])??'—'} (надо ${need(b,a[0])})`),
         ...(r.turr==='да'?TURR.map(a=>`ТУРР ${a[1]}: ${fv(b.id,'f:'+a[0])??'—'} (надо ${need(b,a[0])})`):[])].join('\r\n');
       if (r.last || ph.length) ents.push({name:`${root}/${dir}/сведения.txt`, data:'﻿'+txt});
       secs.push(`<section id="b${esc(b.id)}"><h2>${esc(b.name)} <small>залежь ${esc(b.zal)} · <span class="${hiExtr(b)?'red':''}">${r.extr!=null?fmtNum(r.extr)+'%':esc(r.extr_txt||'')}</span> · <span class="${r.acid===0?'red':''}">H₂SO₄ ${fmtNum(r.acid)} т</span></small></h2>
-       <p>${r.last?'Обход: <b>'+fmtD(r.last)+'</b>, '+esc(r.by):'<span class=mute>Не обходили</span>'} · Программа залита: <b>${esc(r.prog||'—')}</b> · ПЛК: ${esc((r.model+' '+r.ver).trim()||'—')}${r.ok==='нет'?' <span class=red>(не подходит)</span>':''} · ШУ ТУРР необходим: <b>${esc(r.turr||'—')}</b>${r.dist!==''?' ('+esc(r.dist)+' м)':''}</p>
+       <p>${r.last?'Обход: <b>'+fmtD(r.last)+'</b>, '+esc(r.by):'<span class=mute>Не обходили</span>'} · Программа (место/SCADA): <b>${esc(r.prog)}</b> · ПЛК: ${esc((r.model+' '+r.ver).trim()||'—')}${r.ok==='нет'?' <span class=red>(не подходит)</span>':''} · ШУ ТУРР необходим: <b>${esc(r.turr||'—')}</b>${r.dist!==''?' ('+esc(r.dist)+' м)':''}</p>
        ${r.short?`<p class=red>Не хватает: ${esc(r.short)}</p>`:''}${r.want?`<p style="color:#a86400">Желательно: ${esc(r.want)}</p>`:''}${r.note?`<p>Что мешает: ${esc(r.note)}</p>`:''}${r.cmz?`<p>ТУЗ: ${esc(r.cmz)}</p>`:''}${r.cmr?`<p>ТУРР: ${esc(r.cmr)}</p>`:''}
        ${r.last?`<details><summary>Чек-лист</summary><table><tr><th>ТУЗ</th><th>Надо</th><th>Факт</th><th>Кабель</th></tr>${items(TUZ)}</table>${r.turr==='да'?`<table><tr><th>ТУРР</th><th>Надо</th><th>Факт</th><th>Кабель</th></tr>${items(TURR)}</table>`:''}</details>`:''}
        ${invTable(b.id)}
@@ -1130,14 +1174,14 @@ ${secs.join('')}</body></html>`;
 
 // ---------------- таблица (ПК) ----------------
 function tableHTML(){
-  const cols=[['n','№'],['name','Блок'],['zal','Залежь'],['extr','Извлечено'],['acid','H₂SO₄'],['prog','Программа'],['last','Обход'],['by','Кто'],['pct','Заполнено'],['ver','ПЛК'],['turr','ШУ ТУРР'],['short','Не хватает'],['photos','Фото'],['result','Итог']];
+  const cols=[['n','№'],['name','Блок'],['zal','Залежь'],['extr','Извлечено'],['acid','H₂SO₄'],['prog','Программа (место/SCADA)'],['last','Обход'],['by','Кто'],['pct','Заполнено'],['ver','ПЛК'],['turr','ШУ ТУРР'],['short','Не хватает'],['photos','Фото'],['result','Итог']];
   const {k,d}=S.tsort;
   const R=blockList().map(rowData).sort((a,b)=>{ let x=a[k], y=b[k]; if(k==='extr'){ x=x??-1; y=y??-1; } return (x<y?-1:x>y?1:a.n-b.n)*d; });
   return `<div class="row2" style="margin-bottom:8px"><span class="mute small" style="flex:1">Клик по заголовку — сортировка. Клик по строке — открыть блок.</span><button class="btn" data-act="csv">${ICON.dl} CSV для Excel</button></div>
   <div class="tbl"><table><thead><tr>${cols.map(([c,t])=>`<th data-act="tsort" data-k="${c}">${t}${k===c?(d>0?' ▲':' ▼'):''}</th>`).join('')}</tr></thead><tbody>
   ${R.map(r=>{ const b=S.blocks.get(r.id); const s=status(b.id);
    return `<tr data-act="open" data-id="${esc(b.id)}" style="cursor:pointer"><td class="num">${r.n}</td><td class="b">${esc(r.name)}</td><td>${esc(r.zal)}</td>
-   <td class="num ${hiExtr(b)?'red':''}">${r.extr!=null?fmtNum(r.extr)+'%':esc(r.extr_txt||'')}</td><td class="num ${r.acid===0?'red':''}">${fmtNum(r.acid)}</td><td class="${r.prog==='нет'?'red':''}">${esc(r.prog)}</td>
+   <td class="num ${hiExtr(b)?'red':''}">${r.extr!=null?fmtNum(r.extr)+'%':esc(r.extr_txt||'')}</td><td class="num ${r.acid===0?'red':''}">${fmtNum(r.acid)}</td><td class="${/нет/.test(r.prog)?'red':''}">${esc(r.prog)}</td>
    <td><span class="pill ${s.cls}">${r.last?fmtD(r.last):'—'}</span></td><td>${esc(r.by)}</td><td class="num">${r.pct}%</td><td class="${r.ok==='нет'?'red':''}">${esc((r.model+' '+r.ver).trim())}</td>
    <td class="${r.turr==='да'?'red':''}">${esc(r.turr)}${r.dist!==''?' · '+esc(r.dist)+' м':''}</td><td class="wrap red" style="font-weight:400">${esc(r.short)}</td><td class="num">${r.photos||''}</td><td>${esc(r.result)}</td></tr>`; }).join('')}
   </tbody></table></div>`;
@@ -1179,8 +1223,11 @@ document.addEventListener('click', async e=>{
     case 'ipnet': S.ipNet=k; S.ipF='all'; render(); break;
     case 'ipf': S.ipF = S.ipF===k ? 'all' : k; render(); break;
     case 'ipopen': ipForm(k); break;
+    case 'ipsug': ipSuggestStart(id,k); break;
+    case 'pcyc': { const cur=progVal(id,k); const nx=PROG_CYCLE[(PROG_CYCLE.indexOf(cur)+1)%PROG_CYCLE.length]; setField(id,k,nx===undefined?null:nx); if(k==='prog_tuz_site' && fv(id,'prog')!==undefined) setField(id,'prog',null);
+      t.textContent=nx||'—'; t.className='pc '+(nx==='да'?'y':nx==='нет'?'n':nx==='частично'?'p':''); refreshBlockParts(id); break; }
     case 'iptake': ipForm(k, netOf(k.slice(0,k.lastIndexOf('.'))).kind==='plc'?{type:'ПЛК'}:null); break;
-    case 'ippair': { const net=k.slice(0,k.lastIndexOf('.')), o=+k.slice(k.lastIndexOf('.')+1); ipForm(k,{type:'ПЛК'}, net+'.'+(o+1)); break; }
+    case 'ippair': { const net=k.slice(0,k.lastIndexOf('.')), o=+k.slice(k.lastIndexOf('.')+1); ipForm(k,{type:'ПЛК'}, [[net+'.'+(o+1),{type:'HMI'}]]); break; }
     case 'ipaddnet': ipAddNet(); break;
     case 'ipjour': ipJournal(); break;
     case 'ipscan': ipScan(); break;
