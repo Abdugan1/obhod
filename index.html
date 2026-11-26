@@ -204,7 +204,8 @@ tr:hover td{background:var(--pri2)}
 <input type="file" id="fImp" accept=".zip,application/zip,application/x-zip-compressed,.json,application/json" multiple hidden>
 <script>
 {
-const APP_VER = '1.11';
+const APP_VER = '1.12';
+const SOLO = !!document.getElementById('startData');   // офлайн-файл «только для себя» со встроенным стартовым пакетом
 // ---------------- чек-лист ----------------
 const TUZ = [
  ['T_exist','Наличие ТУЗ',1,1],['T_power','Питание в блоке',1,1],['T_cab','Шкаф управления (ШУ)',1,1],['T_mast','Мачта',1,1],
@@ -275,12 +276,27 @@ let DB;
 function dbOpen(){ return new Promise((res,rej)=>{ const r=indexedDB.open('obhod-h1',1);
   r.onupgradeneeded=()=>{ const d=r.result; for (const s of ['kv','blocks','state','photos','blobs','thumbs']) if(!d.objectStoreNames.contains(s)) d.createObjectStore(s); };
   r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
-function tx(store, mode, fn){ return new Promise((res,rej)=>{ const t=DB.transaction(store,mode); const req=fn(t.objectStore(store)); t.oncomplete=()=>res(req ? req.result : undefined); t.onerror=()=>rej(t.error); t.onabort=()=>rej(t.error); }); }
-const dbGet = (s,k) => tx(s,'readonly',st=>st.get(k));
-const dbPut = (s,k,v) => tx(s,'readwrite',st=>st.put(v,k));
-const dbDel = (s,k) => tx(s,'readwrite',st=>st.delete(k));
-function dbAll(s){ return new Promise((res,rej)=>{ const out=new Map(); const t=DB.transaction(s,'readonly'); const c=t.objectStore(s).openCursor();
-  c.onsuccess=()=>{ const cur=c.result; if(cur){ out.set(cur.key,cur.value); cur.continue(); } }; t.oncomplete=()=>res(out); t.onerror=()=>rej(t.error); }); }
+// если хранилище очистили, пока приложение открыто (настройки браузера), соединение закрывается — переоткрываем и перезапускаемся
+function hookDB(db){ db.onclose=()=>{ DB=null; toast('Хранилище очищено — перезапуск'); setTimeout(()=>location.reload(),900); };
+  db.onversionchange=()=>{ try{ db.close(); }catch(e){} DB=null; setTimeout(()=>location.reload(),300); }; return db; }
+async function withDB(run){
+  for (let i=0;;i++){
+    if (!DB) DB=hookDB(await dbOpen());
+    try{ return await new Promise(run); }
+    catch(e){ if (i===0 && e && e.name==='InvalidStateError'){ DB=null; continue; } throw e; }
+  } }
+const txErr = t => t.error || new Error('Запись в хранилище не удалась');
+function tx(store, mode, fn){ return withDB((res,rej)=>{ const t=DB.transaction(store,mode); const req=fn(t.objectStore(store)); t.oncomplete=()=>res(req ? req.result : undefined); t.onerror=()=>rej(txErr(t)); t.onabort=()=>rej(txErr(t)); }); }
+// запасной режим: если хранилище браузера недоступно — данные в памяти + localStorage (без фото)
+let MEM=null; const LSS=['kv','blocks','state','photos'];
+function memInit(){ MEM={}; for (const s of ['kv','blocks','state','photos','blobs','thumbs']){ MEM[s]=new Map(); if (LSS.includes(s)) try{ const j=localStorage.getItem('obhod-h1:'+s); if(j) for (const [k,v] of JSON.parse(j)) MEM[s].set(k,v); }catch(e){} } }
+const memSave=debounce(()=>{ for (const s of LSS){ try{ localStorage.setItem('obhod-h1:'+s, JSON.stringify([...MEM[s]].filter(([k])=>k!=='devkey'))); }catch(e){ console.error(e); } } },500);
+const memW = s => { if (LSS.includes(s)) memSave(); return Promise.resolve(); };
+const dbGet = (s,k) => MEM ? Promise.resolve(MEM[s].get(k)) : tx(s,'readonly',st=>st.get(k));
+const dbPut = (s,k,v) => MEM ? (MEM[s].set(k,v), memW(s)) : tx(s,'readwrite',st=>st.put(v,k));
+const dbDel = (s,k) => MEM ? (MEM[s].delete(k), memW(s)) : tx(s,'readwrite',st=>st.delete(k));
+function dbAll(s){ if (MEM) return Promise.resolve(new Map(MEM[s])); return withDB((res,rej)=>{ const out=new Map(); const t=DB.transaction(s,'readonly'); const c=t.objectStore(s).openCursor();
+  c.onsuccess=()=>{ const cur=c.result; if(cur){ out.set(cur.key,cur.value); cur.continue(); } }; t.oncomplete=()=>res(out); t.onerror=()=>rej(txErr(t)); }); }
 
 // ---------------- состояние ----------------
 const S = { set:{name:'', stale:30, dev:'', curCat:'ТУЗ', lastSend:0}, log:[], blocks:new Map(), st:new Map(), photos:new Map(), baseTs:0, filter:'all', zal:'', q:'', sort:'n', tsort:{k:'n',d:1} };
@@ -370,13 +386,14 @@ const hiExtr = b => b.extr!=null && b.extr>=89.5;
 
 // ---------------- загрузка ----------------
 async function load(){
-  DB = await dbOpen();
+  try{ DB = hookDB(await dbOpen()); await dbPut('kv','_probe',Date.now()); await dbGet('kv','_probe'); }catch(e){ console.error(e); memInit(); S.memMode=(e&&e.message)||String(e); }
   const set = await dbGet('kv','settings'); if (set) Object.assign(S.set, set);
   if (!S.set.dev){ S.set.dev = uid(); await saveSet(); }
   S.log = (await dbGet('kv','log')) || []; if(!Array.isArray(S.log)) S.log=[];
   S.baseTs = (await dbGet('kv','baseTs')) || 0;
   S.blocks = await dbAll('blocks'); S.st = await dbAll('state'); S.photos = await dbAll('photos');
   await loadKeys();
+  if (SOLO && !S.admin) S.admin=true;
   if (S.admin){ await loadQueue(); PEND=(await dbGet('kv','pend'))||{}; await unsealLocal(); } else await sealLocalInv();
 }
 const blockList = () => [...S.blocks.values()].sort((a,b)=>a.n-b.n);
@@ -1226,7 +1243,7 @@ async function sealLocalInv(){
   try{ const sealed=await sealForAdmin(obj); const arr=(await dbGet('kv','invSealed'))||[]; arr.push(sealed); await dbPut('kv','invSealed',arr);
     for (const id in obj){ delete st(id).inv; await saveState(id); } }catch(e){ console.error(e); }
 }
-async function unsealLocal(){
+async function unsealLocal(){ if(!ADM) return;
   const arr=(await dbGet('kv','invSealed'))||[]; for (const sl of arr){ try{ mergeInvObj(await openSeal(sl)); }catch(e){ console.error(e); } }
   if (arr.length) await dbDel('kv','invSealed');
   const ix=await dbGet('kv','invx'); if (ix && ix.seal){ try{ mergeInvObj(await openSeal(ix.seal)); }catch(e){} }
@@ -1236,7 +1253,7 @@ async function makeInvx(){
   const t=Date.now(), seal=await sealForAdmin(obj);
   return {t, seal, sig:await signB(ADM.sign, enc8.encode(t+'|'+seal.ct))};
 }
-async function invxValid(ix){ return !!(ix && ix.seal && ix.sig && await verifyB(await admVerifyKey(), enc8.encode(ix.t+'|'+ix.seal.ct), ix.sig)); }
+async function invxValid(ix){ try{ return !!(ix && ix.seal && ix.sig && await verifyB(await admVerifyKey(), enc8.encode(ix.t+'|'+ix.seal.ct), ix.sig)); }catch(e){ return false; } }
 // очередь на проверку (только у администратора)
 let QUEUE=[];
 async function loadQueue(){ QUEUE=(await dbGet('kv','queue'))||[]; }
@@ -1407,7 +1424,7 @@ function reviewHTML(){
     <div class="card"><div class="sec">ЖУРНАЛ РЕШЕНИЙ</div><div class="hist" id="revlog">…</div></div>`;
 }
 async function fillRevLog(){ const el=$('#revlog'); if(!el) return; const L=(await dbGet('kv','revlog'))||[]; el.innerHTML=L.length?[...L].reverse().slice(0,60).map(l=>`<div>${fmtDT(l.t)} — ${esc(l.m)}</div>`).join(''):'<div>Пока пусто</div>'; }
-function updRevBadge(){ const b=$('#bRev'); if(!b) return; b.hidden=!S.admin; const n=$('#revN'); if(n){ n.textContent=QUEUE.length||''; n.hidden=!QUEUE.length; } }
+function updRevBadge(){ const b=$('#bRev'); if(!b) return; b.hidden=!S.admin || (SOLO && !ADM); const n=$('#revN'); if(n){ n.textContent=QUEUE.length||''; n.hidden=!QUEUE.length; } }
 
 async function revLog(m){ const L=(await dbGet('kv','revlog'))||[]; L.push({t:Date.now(), m}); await dbPut('kv','revlog',L.slice(-500)); }
 
@@ -1434,13 +1451,14 @@ function syncHTML(){
 }
 let phMode='new';
 async function sealPackage(d, photoEnts){
+  if (typeof CompressionStream==='undefined' || !(crypto&&crypto.subtle)) return zipBlob([{name:'data.json', data:JSON.stringify(d)}, ...photoEnts]);
   const raw=await deflate(enc8.encode(JSON.stringify(d)));
   const sig={v:2, dev:S.set.dev, pub:DEVKEY?DEVKEY.pub:null, sig:DEVKEY?await signB(DEVKEY.privateKey, raw):null};
   if (S.admin && ADM) sig.adm=await signB(ADM.sign, raw);
   return zipBlob([{name:'data.bin', data:raw}, {name:'sig.json', data:JSON.stringify(sig)}, ...photoEnts]);
 }
 function packageData(withBase){
-  const state={}; for (const [id,s] of S.st) state[id]={f:s.f, visits:s.visits};
+  const state={}; for (const [id,s] of S.st) state[id]= (SOLO && !ADM && s.inv) ? {f:s.f, visits:s.visits, inv:s.inv} : {f:s.f, visits:s.visits};
   const photos=[...S.photos.values()].map(p=>{ const {noBlob,...m}=p; return m; });
   const d={app:'obhod-h1', ver:1, at:Date.now(), by:S.set.name, dev:S.set.dev, state, photos};
   if (withBase){ d.base={ts:S.baseTs, blocks:[...S.blocks.values()]}; }
@@ -1455,7 +1473,7 @@ async function sendData(){
     let inc=[];
     for (const p of list){ const b=await dbGet('blobs',p.id); if(b){ ents.push({name:'photos/'+p.id+'.jpg', blob:b, crc:p.crc, date:new Date(p.t)}); inc.push(p.id); } }
     d.files=inc;
-    if (S.admin) d.invx=await makeInvx(); else { const ix=await dbGet('kv','invx'); if(ix) d.invx=ix; const sl=await dbGet('kv','invSealed'); if(sl&&sl.length) d.invs=sl; }
+    if (S.admin && ADM) d.invx=await makeInvx(); else if (!S.admin) { const ix=await dbGet('kv','invx'); if(ix) d.invx=ix; const sl=await dbGet('kv','invSealed'); if(sl&&sl.length) d.invs=sl; }
     const z=await sealPackage(d, ents);
     const now=new Date(); const name=safeName(`обход ${S.set.name} ${dstr()} ${pad(now.getHours())}-${pad(now.getMinutes())}`)+'.zip';
     const mb=(z.size/1048576).toFixed(1);
@@ -1478,7 +1496,7 @@ async function readPackage(z){
     try{ sig=JSON.parse(await (await sj.blob()).text()); d=JSON.parse(dec8.decode(await inflate(raw))); }catch(e){ throw new Error('Файл повреждён'); }
     let devOk=false;
     if (sig.pub && sig.sig && sig.dev && d.dev===sig.dev){ try{ const k=await crypto.subtle.importKey('jwk',pubJwk(sig.pub),ECDSA,false,['verify']); devOk=await verifyB(k,raw,sig.sig); }catch(e){} }
-    const admOK = !!sig.adm && await verifyB(await admVerifyKey(), raw, sig.adm);
+    let admOK=false; try{ admOK = !!sig.adm && await verifyB(await admVerifyKey(), raw, sig.adm); }catch(e){}
     return {d, v:2, devOk, admOK, sig};
   }
   if (dj){ let d; try{ d=JSON.parse(await (await dj.blob()).text()); }catch(e){ throw new Error('Файл повреждён'); } return {d, v:1, devOk:false, admOK:false}; }
@@ -1503,7 +1521,7 @@ async function importFiles(files){
         if (P.v===1) throw new Error('файл из старой версии приложения. Пусть отправитель откроет приложение с интернетом (оно обновится) и отправит заново');
         if (!P.devOk && !P.admOK) throw new Error('файл повреждён');
       }
-      const trusted = P.admOK;
+      const trusted = P.admOK || SOLO;
       if (d.by) tot.from.add(d.by);
       if (d.base && d.base.blocks && ((trusted || !S.admin) && d.base.ts>S.baseTs || !S.blocks.size)){
         for (const b of d.base.blocks){ S.blocks.set(b.id,b); await dbPut('blocks',b.id,b); }
@@ -1652,7 +1670,7 @@ function settingsHTML(){
    ${vers.map(v=>`<div class="fld"><span class="l">${esc(v)}</span>${segHTML('set',G,'plcv:'+v,['да','нет'],plcOk(v),'нет')}</div>`).join('')}
    <div class="row2" style="margin-top:8px"><input type="text" id="newVer" placeholder="Новая версия, напр. AG41" style="flex:1"><button class="btn" data-act="addver">Добавить</button></div>
    <div class="small mute" style="margin-top:6px">Эта таблица общая — уходит коллегам вместе с данными.</div></div>
-  ${S.admin?`<div class="card"><div class="sec">ПРОВЕРКА</div>
+  ${S.admin && !SOLO?`<div class="card"><div class="sec">ПРОВЕРКА</div>
    <div class="small">На этом устройстве включён режим проверки. Чужие изменения ждут вашего решения, состав шкафов виден только вам.</div>
    <button class="btn pri wide" data-act="openrev" style="margin-top:10px">Открыть проверку${QUEUE.length?' · '+QUEUE.length:''}</button>
    <button class="btn wide" data-act="admoff" style="margin-top:8px">Выключить на этом устройстве</button></div>`:''}
@@ -1733,7 +1751,7 @@ document.addEventListener('click', async e=>{
     case 'csv': exportCSV(); break;
     case 'tsort': S.tsort = S.tsort.k===k ? {k, d:-S.tsort.d} : {k, d:1}; render(); break;
     case 'addver': { const v=$('#newVer').value.trim().toUpperCase(); if(!v) return; setField(G,'plcv:'+v,'да'); render(); break; }
-    case 'wipe': if (await confirmBox('Удалить ВСЕ данные и фото на этом устройстве? Сначала отправьте свои данные коллегам!','Удалить всё')){ DB.close(); indexedDB.deleteDatabase('obhod-h1'); localStorage.clear(); location.hash=''; setTimeout(()=>location.reload(),300); } break;
+    case 'wipe': if (await confirmBox('Удалить ВСЕ данные и фото на этом устройстве? Сначала отправьте свои данные коллегам!','Удалить всё')){ if(DB) try{ DB.close(); indexedDB.deleteDatabase('obhod-h1'); }catch(_){} localStorage.clear(); location.hash=''; setTimeout(()=>location.reload(),300); } break;
   }
 });
 // пустое значение хранится как v:null, чтобы очистка тоже синхронизировалась
@@ -1769,7 +1787,9 @@ let lastWide=null; window.addEventListener('resize', debounce(()=>{ if(wide()!==
 
 (async()=>{
   try{ await load(); }catch(e){ $('#view').innerHTML='<div class="card">Не удалось открыть хранилище: '+esc(e.message)+'</div>'; return; }
+  if (SOLO && !S.blocks.size){ try{ const z=await zipBlob([{name:'data.json', data:document.getElementById('startData').textContent}]); await importFiles([new File([z],'стартовый пакет.zip',{type:'application/zip'})]); }catch(e){ console.error(e); } }
   lastWide=wide(); render();
+  if (S.memMode) infoBox(`<h3>Хранилище браузера недоступно</h3><div>Отметки и поля сохраняются в упрощённом режиме, но <b>фото пропадут после закрытия</b>. Чаще жмите «Отправить мои данные». Лучше открыть приложение в Chrome.<div class="small mute" style="margin-top:6px">${esc(S.memMode)}</div></div>`);
   if ('serviceWorker' in navigator && location.protocol!=='file:') navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
 }
