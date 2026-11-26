@@ -104,6 +104,8 @@ textarea{min-height:70px;resize:vertical}
 .cab .seg button{min-height:34px;min-width:44px;font-size:13px}
 .off{opacity:.45;pointer-events:none}
 .vrow{display:flex;align-items:center;justify-content:space-between;gap:6px}.vdel{border:0;background:transparent;color:var(--mute);font-size:18px;width:32px;height:28px}
+.seg.mode{display:flex;margin-bottom:8px}.seg.mode button{flex:1;min-height:40px}
+.pills{display:flex;flex-direction:column;gap:3px;align-items:flex-end}.prog2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .netrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}.netrow .nl{font-size:12px;font-weight:800;color:var(--pri);margin-right:2px}
 .ipchip{display:inline-flex;flex-direction:column;align-items:flex-start;line-height:1.1;padding:5px 10px;border-radius:10px;border:1px solid var(--line);background:var(--pri2);font-family:ui-monospace,Consolas,monospace;font-weight:800;font-size:15px;color:var(--pri)}
 .ipchip small{font-family:system-ui,sans-serif;font-weight:600;font-size:10px;color:var(--mute)}
@@ -190,7 +192,7 @@ tr:hover td{background:var(--pri2)}
 <input type="file" id="fImp" accept=".zip,application/zip,application/x-zip-compressed" multiple hidden>
 <script>
 {
-const APP_VER = '1.6';
+const APP_VER = '1.7';
 // ---------------- чек-лист ----------------
 const TUZ = [
  ['T_exist','Наличие ТУЗ',1,1],['T_power','Питание в блоке',1,1],['T_cab','Шкаф управления (ШУ)',1,1],['T_mast','Мачта',1,1],
@@ -312,13 +314,16 @@ function gaps(id){
   return {bad, want};
 }
 const shortages = id => gaps(id).bad;
-function status(id){
-  const lv=lastVisit(id); if(!lv) return {k:'none', t:'не обойден', cls:''};
-  const ds=daysSince(lv.d);
-  if (ds > S.set.stale) return {k:'stale', t:'давно: '+ds+' дн.', cls:'warn', lv};
-  if (fv(id,'result')==='готов') return {k:'done', t:'готов · '+fmtD(lv.d).slice(0,5), cls:'ok', lv};
-  return {k:'done', t:'обойден '+fmtD(lv.d).slice(0,5), cls:'ok', lv};
+function status(id, kind){
+  const pr = kind==='prog', lv=lastVisit(id, kind);
+  if(!lv) return {k:'none', t:pr?'не проверена':'не обойден', sh:'—', cls:''};
+  const ds=daysSince(lv.d), dd=fmtD(lv.d).slice(0,5);
+  if (ds > S.set.stale) return {k:'stale', t:'давно: '+ds+' дн.', sh:'давно '+ds+' дн.', cls:'warn', lv};
+  if (!pr && fv(id,'result')==='готов') return {k:'done', t:'готов · '+dd, sh:dd, cls:'ok', lv};
+  return {k:'done', t:(pr?'проверена ':'обойден ')+dd, sh:dd, cls:'ok', lv};
 }
+const progFilled = id => ['prog_tuz_site','prog_tuz_scada','prog_turr_site','prog_turr_scada'].filter(k=>progVal(id,k)!==undefined).length/4;
+const homeMode = () => S.set.homeMode || 'hw';
 const hiExtr = b => b.extr!=null && b.extr>=89.5;
 
 // ---------------- загрузка ----------------
@@ -380,29 +385,42 @@ function filtered(){
     if (S.zal && String(b.zal)!==S.zal) return false;
     if (q && /^\d+\.\d+/.test(q)){ if (!ipsOfBlock(b.id).some(x=>x.ip.endsWith(q) || x.ip.endsWith('.'+q))) return false; }
     else if (q && !b.id.toLowerCase().includes(q) && !b.name.toLowerCase().includes(q) && !(q.length>=4 && invItems(b.id).some(it=>norm([iv(it,'name'),iv(it,'model'),iv(it,'art'),iv(it,'sn')].join(' ')).includes(norm(q))))) return false;
-    const s=status(b.id).k;
-    if (S.filter==='none' && s!=='none') return false;
-    if (S.filter==='stale' && s!=='stale') return false;
-    if (S.filter==='done' && s!=='done') return false;
+    const md=homeMode(), sh=status(b.id).k, sp=status(b.id,'prog').k;
+    if (md!=='both'){ const s = md==='prog' ? sp : sh;
+      if (S.filter==='none' && s!=='none') return false;
+      if (S.filter==='stale' && s!=='stale') return false;
+      if (S.filter==='done' && s!=='done') return false; }
+    else {
+      if (S.filter==='nohw' && sh==='done') return false;
+      if (S.filter==='noprog' && sp==='done') return false;
+      if (S.filter==='stale' && sh!=='stale' && sp!=='stale') return false;
+      if (S.filter==='done' && !(sh==='done' && sp==='done')) return false; }
     if (S.filter==='hi' && !hiExtr(b)) return false;
-    if (S.filter==='noprog' && lastVisit(b.id,'prog')) return false;
     if (S.filter==='photo' && !photosOf(b.id).length) return false;
     return true; });
   if (S.sort==='zal') L.sort((a,b)=>a.zal-b.zal || a.n-b.n);
-  if (S.sort==='old') L.sort((a,b)=>{ const x=lastVisit(a.id), y=lastVisit(b.id); return (x?x.d:'') < (y?y.d:'') ? -1 : (x?x.d:'') > (y?y.d:'') ? 1 : a.n-b.n; });
+  const ld = id => { const md=homeMode(); const h=(lastVisit(id)||{}).d||'', pp=(lastVisit(id,'prog')||{}).d||''; return md==='hw'?h : md==='prog'?pp : (h<pp?h:pp); };
+  if (S.sort==='old') L.sort((a,b)=>{ const x=ld(a.id), y=ld(b.id); return x<y ? -1 : x>y ? 1 : a.n-b.n; });
   if (S.sort==='name') L.sort((a,b)=>a.id.localeCompare(b.id,'ru',{numeric:true}));
   return L;
 }
 function homeHTML(sel){
-  const all=blockList(); let c={none:0,stale:0,done:0}; for (const b of all) c[status(b.id).k]++;
+  const all=blockList(), md=homeMode();
+  const cnt = kind => { const c={none:0,stale:0,done:0}; for (const b of all) c[status(b.id,kind).k]++; return c; };
+  const ch=cnt(), cp=cnt('prog');
   const zals=[...new Set(all.map(b=>b.zal))].sort((a,b)=>a-b);
-  const F=[['all','Все'],['none','Не обойдены'],['stale','Давно'],['done','Обойдены'],['noprog','Программа не проверена'],['hi','≈90%+'],['photo','С фото']];
+  const F = md==='both'
+    ? [['all','Все'],['nohw','Нет обхода оборуд.'],['noprog','Программа не проверена'],['stale','Давно'],['done','Всё сделано'],['hi','≈90%+'],['photo','С фото']]
+    : md==='prog' ? [['all','Все'],['none','Не проверена'],['stale','Давно'],['done','Проверена'],['hi','≈90%+'],['photo','С фото']]
+    : [['all','Все'],['none','Не обойдены'],['stale','Давно'],['done','Обойдены'],['hi','≈90%+'],['photo','С фото']];
+  if (!F.some(f=>f[0]===S.filter)) S.filter='all';
   const L=filtered();
-  return `<div class="stats">
-   <div class="stat"><b>${all.length}</b><span>всего</span></div>
-   <div class="stat ok"><b>${c.done}</b><span>обойдено</span></div>
-   <div class="stat warn"><b>${c.stale}</b><span>давно</span></div>
-   <div class="stat"><b>${c.none}</b><span>осталось</span></div></div>
+  const both=all.filter(b=>status(b.id).k==='done' && status(b.id,'prog').k==='done').length;
+  const stats = md==='both'
+    ? `<div class="stat"><b>${all.length}</b><span>всего</span></div><div class="stat ok"><b>${ch.done}</b><span>оборуд.</span></div><div class="stat ok"><b>${cp.done}</b><span>программа</span></div><div class="stat"><b>${both}</b><span>оба</span></div>`
+    : (c => `<div class="stat"><b>${all.length}</b><span>всего</span></div><div class="stat ok"><b>${c.done}</b><span>${md==='prog'?'проверено':'обойдено'}</span></div><div class="stat warn"><b>${c.stale}</b><span>давно</span></div><div class="stat"><b>${c.none}</b><span>осталось</span></div>`)(md==='prog'?cp:ch);
+  return `<div class="seg mode" role="tablist">${[['hw','Оборудование'],['prog','Программа'],['both','Оба']].map(([k,t])=>`<button class="${md===k?'on':''}" data-act="hmode" data-k="${k}">${t}</button>`).join('')}</div>
+  <div class="stats">${stats}</div>
   <div class="search"><input type="search" id="q" placeholder="Поиск: 166, 8-5…" value="${esc(S.q)}" inputmode="search">
    <select id="zal" aria-label="Залежь"><option value="">Все залежи</option>${zals.map(z=>`<option value="${z}" ${String(z)===S.zal?'selected':''}>Залежь ${z}</option>`).join('')}</select></div>
   <div class="chips">${F.map(([k,t])=>`<button class="chip ${S.filter===k?'on':''}" data-act="flt" data-k="${k}">${t}</button>`).join('')}
@@ -413,14 +431,19 @@ function homeHTML(sel){
 const pdate = p => (p.taken2 && p.taken2.v) ? p.taken2.v : (p.taken || p.t);
 function photosOf(id){ return [...S.photos.values()].filter(p=>p.block===id && !(p.del&&p.del.v)).sort((a,b)=>pdate(b)-pdate(a)); }
 function cardHTML(b, sel){
-  const s=status(b.id), p=progress(b.id), np=photosOf(b.id).length, acid=b.acid||0;
+  const md=homeMode(), sh=status(b.id), sp=status(b.id,'prog'), np=photosOf(b.id).length, acid=b.acid||0;
+  const s = md==='prog' ? sp : sh, p = md==='prog' ? progFilled(b.id) : progress(b.id);
+  const pills = md==='both'
+    ? `<span class="pills"><span class="pill ${sh.cls}">обор. ${esc(sh.sh)}</span><span class="pill ${sp.cls}">прогр. ${esc(sp.sh)}</span></span>`
+    : `<span class="pill ${s.cls}">${esc(s.t)}</span>`;
   return `<button class="blk ${sel===b.id?'sel':''}" data-act="open" data-id="${esc(b.id)}">
-   <div class="t"><span class="nm">${esc(b.name)}</span><span class="pill ${s.cls}">${esc(s.t)}</span></div>
+   <div class="t"><span class="nm">${esc(b.name)}</span>${pills}</div>
    <div class="meta"><span>залежь ${esc(b.zal)}</span>
     <span class="${hiExtr(b)?'red':''}">${b.extr!=null ? fmtNum(b.extr)+'%' : esc(b.extr_txt||'')}</span>
     <span class="${acid===0?'red':''}">H₂SO₄ ${fmtNum(acid)} т</span>
-    ${np?`<span>фото: ${np}</span>`:''}${s.lv?`<span>${esc(s.lv.by)}</span>`:''}${lastVisit(b.id,'prog')?`<span>прогр. ${fmtD(lastVisit(b.id,'prog').d).slice(0,5)}</span>`:''}</div>
-   <div class="prog"><i style="width:${Math.round(p*100)}%"></i></div></button>`;
+    ${md!=='hw'?`<span class="${/нет/.test(progShort(b.id))?'red':''}" style="font-weight:600">${esc(progShort(b.id))}</span>`:''}
+    ${np&&md!=='prog'?`<span>фото: ${np}</span>`:''}${md!=='both'&&s.lv?`<span>${esc(s.lv.by)}</span>`:''}</div>
+   ${md==='both' ? `<div class="prog2"><div class="prog"><i style="width:${Math.round(progress(b.id)*100)}%"></i></div><div class="prog"><i style="width:${Math.round(progFilled(b.id)*100)}%;background:var(--warn)"></i></div></div>` : `<div class="prog"><i style="width:${Math.round(p*100)}%"></i></div>`}</button>`;
 }
 
 // ---------------- блок ----------------
@@ -1224,6 +1247,7 @@ document.addEventListener('click', async e=>{
   switch(a){
     case 'open': go('b-'+encodeURIComponent(id)); break;
     case 'flt': S.filter=k; render(); break;
+    case 'hmode': S.set.homeMode=k; S.filter='all'; saveSet(); render(); break;
     case 'tap': { const n=need(b,k), v=fv(id,'f:'+k); setField(id,'f:'+k, v===undefined||v<n ? Math.max(n,1) : v); refreshBlockParts(id,k); break; }
     case 'inc': { const v=fv(id,'f:'+k); setField(id,'f:'+k, Math.min(20,(v??0)+1)); refreshBlockParts(id,k); break; }
     case 'dec': { const v=fv(id,'f:'+k); if (v===undefined) break; if (v===0) clearField(id,'f:'+k); else setField(id,'f:'+k,v-1); refreshBlockParts(id,k); break; }
