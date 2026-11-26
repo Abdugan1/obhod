@@ -100,6 +100,9 @@ textarea{min-height:70px;resize:vertical}
 .cab{display:flex;align-items:center;gap:8px;margin-top:6px;padding-left:14px;font-size:14px;color:var(--mute)}
 .cab .seg button{min-height:34px;min-width:44px;font-size:13px}
 .off{opacity:.45;pointer-events:none}
+.sech{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}.sech .sec{margin-bottom:0}
+.it.nn .lb{color:var(--mute);font-weight:500}
+.ctl .v.need{background:var(--pri2);border-color:var(--pri);color:var(--pri)}.ctl .v.need.own{background:var(--pri);color:#fff}
 .short{background:var(--badbg);color:var(--bad);border-radius:10px;padding:8px 10px;font-size:14px;margin-top:6px}
 .okbox{background:var(--okbg);color:var(--ok);border-radius:10px;padding:8px 10px;font-size:14px;margin-top:6px}
 /* photos */
@@ -121,7 +124,7 @@ textarea{min-height:70px;resize:vertical}
 .viewer .vb input{background:#222;border-color:#333;color:#eee}
 .viewer .top{position:absolute;top:0;right:0;left:0;display:flex;justify-content:space-between;padding:8px;padding-top:max(8px,env(safe-area-inset-top))}
 .viewer .top .ib{background:rgba(0,0,0,.5)}
-#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:70;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
+#toast{position:fixed;left:50%;top:calc(66px + env(safe-area-inset-top));transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:70;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
 #toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
 /* table (PC) */
@@ -159,7 +162,7 @@ tr:hover td{background:var(--pri2)}
 <input type="file" id="fImp" accept=".zip,application/zip,application/x-zip-compressed" multiple hidden>
 <script>
 {
-const APP_VER = '1.0';
+const APP_VER = '1.2';
 // ---------------- чек-лист ----------------
 const TUZ = [
  ['T_exist','Наличие ТУЗ',1,1],['T_power','Питание в блоке',1,1],['T_cab','Шкаф управления (ШУ)',1,1],['T_mast','Мачта',1,1],
@@ -181,7 +184,7 @@ const DEF_PLCV = {AG40:'да', AG31:'нет', AG30:'нет', AE30:'нет'};
 const FIELD_LB = {plc_model:'ПЛК ТУЗ', plc_ver:'Версия ПЛК', link:'Кабель ТУРР–ТУЗ', dist:'Расстояние ТУЗ–ТУРР', turr_need:'ШУ в ТУРР необходим',
  fm_tuz:'Расх. не подходят (ТУЗ)', fm_turr:'Расх. не подходят (ТУРР)', cm_tuz:'Комментарий ТУЗ', cm_turr:'Комментарий ТУРР',
  result:'Итог', result_note:'Что мешает', prog:'Программа залита'};
-function fieldLabel(k){ if (k.startsWith('f:')) { const id=k.slice(2); if (ITEM[id]) return ITEM[id].sec+': '+ITEM[id].lb; if (CABLE_OF[id]) return 'Кабель: '+ITEM[CABLE_OF[id]].lb; } return FIELD_LB[k]||k; }
+function fieldLabel(k){ if (k.startsWith('n:')) return 'Надо — '+fieldLabel('f:'+k.slice(2)); if (k.startsWith('f:')) { const id=k.slice(2); if (ITEM[id]) return ITEM[id].sec+': '+ITEM[id].lb; if (CABLE_OF[id]) return 'Кабель: '+ITEM[CABLE_OF[id]].lb; } return FIELD_LB[k]||k; }
 
 // ---------------- утилиты ----------------
 const $ = s => document.querySelector(s);
@@ -227,20 +230,23 @@ const saveSet = () => dbPut('kv','settings',S.set);
 const saveLog = () => dbPut('kv','log',S.log.slice(-200));
 function setField(id, k, v){
   st(id).f[k] = {v, t:Date.now(), by:S.set.name, d:S.set.dev};
-  if (id!==G) ensureVisit(id);
+  if (id!==G && !k.startsWith('n:')) ensureVisit(id);
   saveState(id);
 }
 function ensureVisit(id){ const s=st(id), d=dstr(); if(!s.visits.some(x=>x.d===d && x.by===S.set.name)) s.visits.push({id:uid(), d, t:Date.now(), by:S.set.name}); }
 function lastVisit(id){ const v=st(id).visits; if(!v.length) return null; return v.reduce((a,b)=> (b.d>a.d || (b.d===a.d && b.t>a.t)) ? b : a); }
 function plcOk(ver){ if(!ver) return ''; const f=st(G).f['plcv:'+ver]; return f ? f.v : (DEF_PLCV[ver]||''); }
 function plcVersions(){ const s=new Set(Object.keys(DEF_PLCV)); for (const k in st(G).f) if (k.startsWith('plcv:')) s.add(k.slice(5)); return [...s]; }
-function need(b, id){ if (id==='T_valvec') return need(b,'T_valve'); if (CABLE_OF[id]) return 1; return (b.need && b.need[id]!=null) ? b.need[id] : ITEM[id].need; }
+function baseNeed(b, id){ return (b.need && b.need[id]!=null) ? b.need[id] : ITEM[id].need; }
+// «надо» по блоку: своё значение (поле n:<id>, синхронизируется) или по умолчанию; кабель нужен, если нужен сам элемент
+function need(b, id){ if (CABLE_OF[id]) return need(b, CABLE_OF[id]) > 0 ? 1 : 0; const o=fv(b.id,'n:'+id); return o!==undefined ? o : baseNeed(b,id); }
 const turrNeeded = id => fv(id,'turr_need')==='да';
 
 function applicable(id){
-  const out=[]; for (const a of TUZ){ out.push(a[0]); if(a[4]) out.push(a[4]); }
-  if (!turrNeeded(id)) out.push('L_cab');
-  if (turrNeeded(id)) for (const a of TURR){ out.push(a[0]); if(a[4]) out.push(a[4]); }
+  const b=S.blocks.get(id), out=[];
+  const add = a => { if (need(b,a[0])>0){ out.push(a[0]); if(a[4]) out.push(a[4]); } };
+  TUZ.forEach(add);
+  if (!turrNeeded(id)) out.push('L_cab'); else TURR.forEach(add);
   return out;
 }
 function progress(id){ const ap=applicable(id); let n=ap.filter(k=>fv(id,'f:'+k)!==undefined).length + (fv(id,'turr_need')?1:0); return n/(ap.length+1); }
@@ -282,7 +288,7 @@ const wide = () => matchMedia('(min-width:1000px)').matches;
 let lastRoute='';
 function render(){
   const r=route(); const v=$('#view');
-  const rk=location.hash; if (rk!==lastRoute){ lastRoute=rk; requestAnimationFrame(()=>window.scrollTo(0,0)); }
+  const rk=location.hash; if (rk!==lastRoute){ lastRoute=rk; S.editNeed=false; requestAnimationFrame(()=>window.scrollTo(0,0)); }
   closeModal(true);
   $('#bBack').hidden = r.v==='home' || (r.v==='block' && wide());
   if (!S.set.name || !S.blocks.size){ $('#title').textContent='Обход блоков'; v.innerHTML=welcomeHTML(); return; }
@@ -349,7 +355,8 @@ function homeHTML(sel){
     ${[['n','По списку'],['zal','По залежам'],['old','Давно не были'],['name','По номеру']].map(([k,t])=>`<option value="${k}" ${S.sort===k?'selected':''}>${t}</option>`).join('')}</select></div>
   <div id="list">${L.length ? L.map(b=>cardHTML(b,sel)).join('') : '<div class="empty">Ничего не найдено</div>'}</div>`;
 }
-function photosOf(id){ return [...S.photos.values()].filter(p=>p.block===id && !(p.del&&p.del.v)).sort((a,b)=>b.t-a.t); }
+const pdate = p => (p.taken2 && p.taken2.v) ? p.taken2.v : (p.taken || p.t);
+function photosOf(id){ return [...S.photos.values()].filter(p=>p.block===id && !(p.del&&p.del.v)).sort((a,b)=>pdate(b)-pdate(a)); }
 function cardHTML(b, sel){
   const s=status(b.id), p=progress(b.id), np=photosOf(b.id).length, acid=b.acid||0;
   return `<button class="blk ${sel===b.id?'sel':''}" data-act="open" data-id="${esc(b.id)}">
@@ -367,17 +374,28 @@ function segHTML(act, id, k, opts, cur, noVal){
 }
 function itemHTML(id, b, k){
   const it=ITEM[k], v=fv(id,'f:'+k), n=need(b,k), old=(b.old||{})[k];
+  const def=baseNeed(b,k), own=fv(id,'n:'+k)!==undefined;
+  const lbl=`${it.crit?'<span class="dot">●&nbsp;</span>':''}${esc(it.lb)}`;
+  if (S.editNeed) return `<div class="it" id="it-${k}"><div class="r">
+   <div class="lb">${lbl}<small>${own?'своё, обычно '+def+' · нажмите на число — вернуть':'обычно'}</small></div>
+   <div class="ctl"><button data-act="ndec" data-id="${esc(id)}" data-k="${k}" aria-label="Меньше">−</button>
+    <button class="v need ${own?'own':''}" data-act="nreset" data-id="${esc(id)}" data-k="${k}" aria-label="Надо">${n}</button>
+    <button data-act="ninc" data-id="${esc(id)}" data-k="${k}" aria-label="Больше">+</button></div></div></div>`;
+  if (!n) return `<div class="it nn" id="it-${k}"><div class="r"><div class="lb">${lbl}<small>не нужно на этом блоке${v!==undefined?' · стоит: '+v:''}</small></div></div></div>`;
   const cls = v===undefined ? 'na' : (v>=n ? 'ok' : 'bad');
   let cab='';
   if (it.cab){ const cv=fv(id,'f:'+it.cab);
     cab=`<div class="cab">Кабель: <div class="seg">${[[1,'есть'],[0,'нет']].map(([x,t])=>`<button class="${cv===x?'on':''} ${cv===x&&x===0?'no':''}" data-act="cab" data-id="${esc(id)}" data-k="${it.cab}" data-v="${x}">${t}</button>`).join('')}</div></div>`; }
   return `<div class="it" id="it-${k}"><div class="r">
-   <div class="lb">${it.crit?'<span class="dot">●&nbsp;</span>':''}${esc(it.lb)}<small>надо ${n||'—'}${old?' · ранее: '+esc(old):''}</small></div>
+   <div class="lb">${lbl}<small>надо ${n}${own?' (своё)':''}${old?' · ранее: '+esc(old):''}</small></div>
    <div class="ctl"><button class="z" data-act="q0" data-id="${esc(id)}" data-k="${k}" aria-label="Нет">нет</button>
     <button data-act="dec" data-id="${esc(id)}" data-k="${k}" aria-label="Минус">−</button>
     <button class="v ${cls}" data-act="tap" data-id="${esc(id)}" data-k="${k}" aria-label="Отметить">${v===undefined?'—':v}</button>
     <button data-act="inc" data-id="${esc(id)}" data-k="${k}" aria-label="Плюс">+</button></div></div>${cab}</div>`;
 }
+const needBtn = () => `<button class="chip ${S.editNeed?'on':''}" data-act="editneed">${S.editNeed?'Готово':'Изменить «надо»'}</button>`;
+const needHint = () => S.editNeed ? '<div class="short" style="background:var(--pri2);color:var(--ink);margin:0 0 6px">Сколько нужно именно на этом блоке. 0 — не нужно совсем. Изменение уходит коллегам при синхронизации.</div>' : '';
+function lastvHTML(id){ const lv=lastVisit(id); return lv ? 'Последний обход: <b>'+fmtD(lv.d)+'</b>, '+esc(lv.by) : '<span class="mute">Ещё не обходили</span>'; }
 function summaryHTML(id){
   const sh=shortages(id), p=progress(id);
   const done = p>=0.999;
@@ -398,7 +416,7 @@ function blockHTML(id){
   ${b.shared?`<div class="note">Общий ТУЗ с блоком ${esc(b.shared)}</div>`:''}
   ${b.issues?`<div class="note"><b>Ранее:</b> ${esc(b.issues)}</div>`:''}
   <div class="fld" style="margin-top:6px"><span class="l">Программа залита</span>${segHTML('set',id,'prog',['да','нет','частично'],fv(id,'prog'),'нет')}</div>
-  <div class="visit"><span class="small ${lv?'':'mute'}">${lv?'Последний обход: <b>'+fmtD(lv.d)+'</b>, '+esc(lv.by):'Ещё не обходили'}</span>
+  <div class="visit"><span class="small" id="lastv">${lastvHTML(id)}</span>
    <button class="btn" data-act="visit" data-id="${esc(id)}" style="margin-left:auto">${ICON.check} Обход сегодня</button></div></div>
 
   <div class="card" id="sum">${summaryHTML(id)}</div>
@@ -409,7 +427,7 @@ function blockHTML(id){
    ${ver==='другая'?`<div class="fld"><span class="l">Какая</span><input type="text" data-inp="plc_ver_txt" data-id="${esc(id)}" value="${esc(fv(id,'plc_ver_txt')||'')}" style="max-width:200px"></div>`:''}
    <div class="fld"><span class="l">Подходит</span><span class="pill ${ok==='да'?'ok':ok==='нет'?'bad':''}">${ok||(ver?'не указано в настройках':'—')}</span></div></div>
 
-  <div class="card"><div class="sec">ТУЗ</div>${TUZ.map(a=>itemHTML(id,b,a[0])).join('')}</div>
+  <div class="card"><div class="sech"><div class="sec">ТУЗ</div>${needBtn()}</div>${needHint()}${TUZ.map(a=>itemHTML(id,b,a[0])).join('')}</div>
 
   <div class="card"><div class="sec">СВЯЗЬ С ТУРР</div>
    <div class="fld"><span class="l">Кабель ТУРР – ТУЗ</span><div class="seg">${[[1,'есть'],[0,'нет']].map(([x,t])=>`<button class="${link===x?'on':''} ${link===x&&x===0?'no':''}" data-act="cab" data-id="${esc(id)}" data-k="L_cab" data-v="${x}">${t}</button>`).join('')}</div>
@@ -417,7 +435,7 @@ function blockHTML(id){
    <div class="fld"><label for="dist">Расстояние ТУЗ – ТУРР, м</label><input type="number" id="dist" inputmode="numeric" data-inp="dist" data-num="1" data-id="${esc(id)}" value="${esc(fv(id,'dist')??'')}" style="max-width:120px"></div>
    <div class="fld"><span class="l">ШУ в ТУРР необходим?</span>${segHTML('set',id,'turr_need',['да','нет'],tn)}</div></div>
 
-  <div class="card ${tn==='да'?'':'off'}" id="turr"><div class="sec">ТУРР ${tn==='да'?'':'— заполняется, если ШУ в ТУРР необходим'}</div>${TURR.map(a=>itemHTML(id,b,a[0])).join('')}</div>
+  <div class="card ${tn==='да'?'':'off'}" id="turr"><div class="sech"><div class="sec">ТУРР ${tn==='да'?'':'— заполняется, если ШУ в ТУРР необходим'}</div>${tn==='да'?needBtn():''}</div>${tn==='да'?needHint():''}${TURR.map(a=>itemHTML(id,b,a[0])).join('')}</div>
 
   <div class="card"><div class="sec">РАСХОДОМЕРЫ, НЕ ПОДЛЕЖАЩИЕ АВТОМАТИЗАЦИИ</div>
    ${['fm_tuz','fm_turr'].map((k,i)=>`<div class="fld"><span class="l">${i?'ТУРР':'ТУЗ'}, шт</span><input type="number" inputmode="numeric" data-inp="${k}" data-num="1" data-id="${esc(id)}" value="${esc(fv(id,k)??'')}" style="max-width:100px"></div>`).join('')}</div>
@@ -426,7 +444,7 @@ function blockHTML(id){
    <div class="chips">${PHOTO_CATS.map(c=>`<button class="chip ${S.set.curCat===c?'on':''}" data-act="cat" data-k="${esc(c)}">${esc(c)}</button>`).join('')}</div>
    <div class="row2"><button class="btn pri" data-act="cam" data-id="${esc(id)}" style="flex:1">${ICON.cam} Снять</button><button class="btn" data-act="gal" data-id="${esc(id)}" style="flex:1">${ICON.img} Из галереи</button></div>
    <div class="ph" id="ph">${ph.map(photoTile).join('')}</div>
-   ${ph.length?'':'<div class="small mute" style="margin-top:6px">Фото пока нет. Выберите категорию и нажмите «Снять».</div>'}</div>
+   <div class="small mute" style="margin-top:6px">${ph.length?'':'Фото пока нет. Выберите категорию и нажмите «Снять». '}Старые фото — «Из галереи»: дата берётся из снимка, её можно поправить, открыв фото.</div></div>
 
   <div class="card"><div class="sec">КОММЕНТАРИИ</div>
    <label class="small b" for="cmt">ТУЗ</label><textarea id="cmt" data-inp="cm_tuz" data-id="${esc(id)}">${esc(fv(id,'cm_tuz')||'')}</textarea>
@@ -439,15 +457,15 @@ function blockHTML(id){
   <div class="card"><div class="sec">ИСТОРИЯ</div>${historyHTML(id)}</div>`;
 }
 function photoTile(p){
-  const d=new Date(p.t);
-  return `<button data-act="pview" data-pid="${esc(p.id)}">${p.noBlob?`<div class="nob">фото у ${esc(p.by)}<br>ещё не передано</div>`:`<img alt="" data-thumb="${esc(p.id)}">`}<span>${pad(d.getDate())}.${pad(d.getMonth()+1)} · ${esc(p.cat?p.cat.v:'')}</span></button>`;
+  const d=new Date(pdate(p)), yr=d.getFullYear()!==new Date().getFullYear() ? '.'+String(d.getFullYear()).slice(2) : '';
+  return `<button data-act="pview" data-pid="${esc(p.id)}">${p.noBlob?`<div class="nob">фото у ${esc(p.by)}<br>ещё не передано</div>`:`<img alt="" data-thumb="${esc(p.id)}">`}<span>${pad(d.getDate())}.${pad(d.getMonth()+1)}${yr} · ${esc(p.cat?p.cat.v:'')}</span></button>`;
 }
 function historyHTML(id){
   const s=st(id); const vis=[...s.visits].sort((a,b)=>b.t-a.t);
   const ch=Object.entries(s.f).filter(([k,f])=>f.t>1).sort((a,b)=>b[1].t-a[1].t).slice(0,10);
-  const val = v => v===1&&false ? '' : String(v).slice(0,40);
+  const val = (k,v) => v==null ? (k.startsWith('n:') ? 'по умолчанию' : 'очищено') : String(v).slice(0,40);
   return `<div class="hist"><div class="b" style="border:0">Обходы</div>${vis.length?vis.map(v=>`<div>${fmtD(v.d)} — ${esc(v.by)}</div>`).join(''):'<div>—</div>'}
-   <div class="b" style="border:0;margin-top:8px">Последние изменения</div>${ch.length?ch.map(([k,f])=>`<div>${fmtDT(f.t)} · ${esc(f.by)}: ${esc(fieldLabel(k))} = ${esc(val(f.v))}</div>`).join(''):'<div>—</div>'}</div>`;
+   <div class="b" style="border:0;margin-top:8px">Последние изменения</div>${ch.length?ch.map(([k,f])=>`<div>${fmtDT(f.t)} · ${esc(f.by)}: ${esc(fieldLabel(k))} = ${esc(val(k,f.v))}</div>`).join(''):'<div>—</div>'}</div>`;
 }
 const thumbURL = new Map();
 async function loadThumbs(){
@@ -463,6 +481,7 @@ function refreshBlockParts(id, k){
   const b=S.blocks.get(id);
   if (k && ITEM[k]){ const el=document.getElementById('it-'+k); if(el) el.outerHTML=itemHTML(id,b,k); }
   const sum=$('#sum'); if(sum) sum.innerHTML=summaryHTML(id);
+  const lvEl=$('#lastv'); if(lvEl) lvEl.innerHTML=lastvHTML(id);
   if (wide()){ const old=document.querySelector(`.blk[data-id="${CSS.escape(id)}"]`); if(old) old.outerHTML=cardHTML(b,id); }
 }
 
@@ -476,22 +495,63 @@ async function makeImg(file, max, q){
   const blob = await new Promise(r=>c.toBlob(r,'image/jpeg',q));
   return {blob, w:cw, h:ch};
 }
+// дата съёмки из EXIF (до сжатия — canvas её стирает)
+async function exifDate(file){
+  try{
+    const b=new Uint8Array(await file.slice(0,262144).arrayBuffer()); if(b[0]!==0xFF||b[1]!==0xD8) return null;
+    let o=2;
+    while(o+10<b.length){
+      if(b[o]!==0xFF) return null; const m=b[o+1], len=(b[o+2]<<8)|b[o+3];
+      if(m===0xE1 && b[o+4]===0x45 && b[o+5]===0x78 && b[o+6]===0x69 && b[o+7]===0x66){
+        const s0=o+10, le=b[s0]===0x49, dv=new DataView(b.buffer);
+        const u16=x=>dv.getUint16(s0+x,le), u32=x=>dv.getUint32(s0+x,le);
+        const ifd=off=>{ const n=u16(off), t={}; for(let i=0;i<n;i++){ const e=off+2+i*12; t[u16(e)]={c:u32(e+4), v:e+8}; } return t; };
+        const str=t=>{ const off=t.c>4?u32(t.v):t.v; let r=''; for(let i=0;i<t.c-1;i++) r+=String.fromCharCode(b[s0+off+i]); return r; };
+        const i0=ifd(u32(4)); let d=null;
+        if(i0[0x8769]){ const ex=ifd(u32(i0[0x8769].v)); if(ex[0x9003]) d=str(ex[0x9003]); else if(ex[0x9004]) d=str(ex[0x9004]); }
+        if(!d && i0[0x0132]) d=str(i0[0x0132]);
+        const mm=d && d.match(/(\d{4}):(\d\d):(\d\d) (\d\d):(\d\d):(\d\d)/); if(!mm) return null;
+        const t=new Date(+mm[1],mm[2]-1,+mm[3],+mm[4],+mm[5],+mm[6]).getTime(); return isNaN(t)||+mm[1]<2000 ? null : t;
+      }
+      if(m===0xDA) return null; o+=2+len;
+    }
+  }catch(e){}
+  return null;
+}
 let photoTarget=null;
-async function addPhotos(files){
+async function addPhotos(files, src){
   const id=photoTarget; if(!id || !files.length) return;
   persistAsk();
-  let n=0;
+  const added=[];
   for (const f of files){
     try{
+      const ex=await exifDate(f);
       const {blob,w,h}=await makeImg(f,1920,0.82); const th=(await makeImg(blob,360,0.7)).blob;
       const crc=crc32(new Uint8Array(await blob.arrayBuffer()));
       const t=Date.now();
-      const p={id:uid(), block:id, t, taken:f.lastModified||t, by:S.set.name, dev:S.set.dev, cat:{v:S.set.curCat,t}, note:{v:'',t}, del:{v:0,t:0}, w, h, size:blob.size, crc};
-      await dbPut('blobs',p.id,blob); await dbPut('thumbs',p.id,th); await dbPut('photos',p.id,p); S.photos.set(p.id,p); n++;
+      const taken = ex || (src==='cam' ? t : (f.lastModified||t));
+      const p={id:uid(), block:id, t, taken, dsrc: ex?'exif':(src==='cam'?'cam':'file'), by:S.set.name, dev:S.set.dev, cat:{v:S.set.curCat,t}, note:{v:'',t}, del:{v:0,t:0}, w, h, size:blob.size, crc};
+      await dbPut('blobs',p.id,blob); await dbPut('thumbs',p.id,th); await dbPut('photos',p.id,p); S.photos.set(p.id,p); added.push(p);
     }catch(e){ console.error(e); toast('Не удалось обработать фото'); }
   }
-  if (n){ ensureVisit(id); await saveState(id); toast(n===1?'Фото сохранено':'Сохранено фото: '+n); render(); }
+  if (!added.length) return;
+  if (added.some(p=>p.dsrc!=='file' && dstr(pdate(p))===dstr())){ ensureVisit(id); await saveState(id); }
+  toast(added.length===1?'Фото сохранено':'Сохранено фото: '+added.length); render();
+  const nodate=added.filter(p=>p.dsrc==='file');
+  if (src==='gal' && nodate.length) askPhotoDate(nodate);
+  else if (src==='gal' && added.some(p=>dstr(pdate(p))!==dstr())) toast('Дата взята из снимка');
 }
+function askPhotoDate(list){
+  const m=openModal(`<h3>Когда сделаны фото?</h3>
+   <div class="small mute" style="margin-bottom:10px">У ${list.length===1?'этого фото':list.length+' фото'} в файле нет даты съёмки (так бывает, если фото пришло через Telegram или WhatsApp). Сейчас стоит ${fmtD(dstr(pdate(list[0])))}. Если фото старые — укажите дату.</div>
+   <input type="date" id="pdSel" value="${dstr(pdate(list[0]))}" max="${dstr()}">
+   <div class="row2" style="margin-top:12px"><button class="btn" data-m="no" style="flex:1">Оставить</button><button class="btn pri" data-m="ok" style="flex:1">Применить</button></div>`);
+  m.onclick=async e=>{ const b=e.target.closest('[data-m]'); if(!b) return;
+    if (b.dataset.m==='ok'){ const v=$('#pdSel').value; if(v){ const ms=new Date(v+'T12:00:00').getTime(), now=Date.now();
+      for (const p of list){ p.taken2={v:ms,t:now}; await dbPut('photos',p.id,p); } toast('Дата фото: '+fmtD(v)); } }
+    m.onclick=null; closeModal(); render(); };
+}
+const toLocalInput = ms => { const d=new Date(ms); return dstr(ms)+'T'+pad(d.getHours())+':'+pad(d.getMinutes()); };
 async function viewPhoto(pid){
   const p=S.photos.get(pid); if(!p) return;
   const bl = await dbGet('blobs',pid);
@@ -499,7 +559,8 @@ async function viewPhoto(pid){
   const el=document.createElement('div'); el.className='viewer';
   el.innerHTML=`<div class="top"><button class="ib" data-v="close" aria-label="Закрыть">${ICON.x}</button>${bl?`<button class="ib" data-v="share" aria-label="Поделиться">${ICON.share}</button>`:''}</div>
    ${bl?`<img src="${u}" alt="">`:'<div style="flex:1;display:grid;place-items:center;color:#aaa">Фото ещё не передано с телефона '+esc(p.by)+'</div>'}
-   <div class="vb"><div class="small" style="margin-bottom:6px">${fmtDT(p.taken||p.t)} · ${esc(p.by)} · ${esc(S.blocks.get(p.block)?.name||'')}</div>
+   <div class="vb"><div class="small" style="margin-bottom:6px">${esc(p.by)} · ${esc(S.blocks.get(p.block)?.name||'')} · добавлено ${fmtDT(p.t)}</div>
+   <div class="row2" style="margin-bottom:8px"><label class="small" for="vDate" style="flex:none">Дата снимка</label><input type="datetime-local" id="vDate" data-v="date" value="${toLocalInput(pdate(p))}" style="flex:1;color-scheme:dark;background:#222;border-color:#333;color:#eee"></div>
    <div class="chips">${PHOTO_CATS.map(c=>`<button class="chip ${p.cat.v===c?'on':''}" data-v="cat" data-c="${esc(c)}" style="background:${p.cat.v===c?'':'#222'};color:${p.cat.v===c?'':'#eee'};border-color:#333">${esc(c)}</button>`).join('')}</div>
    <div class="row2"><input type="text" placeholder="Подпись к фото" value="${esc(p.note.v)}" data-v="note" style="flex:1"><button class="btn bad" data-v="del" style="background:#222">Удалить</button></div></div>`;
   document.body.appendChild(el);
@@ -512,6 +573,7 @@ async function viewPhoto(pid){
     if (t.dataset.v==='del'){ if(await confirmBox('Удалить это фото?','Удалить')){ p.del={v:1,t:Date.now()}; saveP(); dbDel('blobs',p.id); dbDel('thumbs',p.id); close(); toast('Фото удалено'); } }
     if (t.dataset.v==='share'){ await shareOrSave(bl, safeName(`${S.blocks.get(p.block)?.name} ${fmtDT(p.t)}`)+'.jpg', 'image/jpeg', true); }
   });
+  el.querySelector('[data-v=date]').addEventListener('change', e=>{ const v=e.target.value; if(!v) return; const ms=new Date(v).getTime(); if(isNaN(ms)) return; p.taken2={v:ms,t:Date.now()}; saveP(); toast('Дата снимка изменена'); });
   el.querySelector('[data-v=note]').addEventListener('input', debounce(e=>{ p.note={v:e.target.value,t:Date.now()}; saveP(); },400));
 }
 let persistAsked=false;
@@ -652,7 +714,7 @@ async function importFiles(files){
       for (const p of d.photos||[]){
         let cur=S.photos.get(p.id);
         if (!cur){ cur={...p, noBlob:true}; if(!(p.del&&p.del.v)) tot.photos++; }
-        else for (const k of ['cat','note','del']) if (p[k] && (!cur[k] || p[k].t>cur[k].t)) cur[k]=p[k];
+        else for (const k of ['cat','note','del','taken2']) if (p[k] && (!cur[k] || p[k].t>cur[k].t)) cur[k]=p[k];
         if (cur.noBlob && files.has(p.id) && !(cur.del&&cur.del.v)){ const ent=z.get('photos/'+p.id+'.jpg'); if(ent){ const bl=await ent.blob(); await dbPut('blobs',p.id,new Blob([bl],{type:'image/jpeg'})); delete cur.noBlob; } }
         if (cur.del && cur.del.v){ dbDel('blobs',p.id); dbDel('thumbs',p.id); }
         S.photos.set(p.id,cur); await dbPut('photos',p.id,cur);
@@ -691,13 +753,13 @@ async function exportReport(){
     const root=`Обход Харасан-1 ${dstr()}`; const ents=[]; const secs=[];
     const L=[...blockList()].sort((a,b)=>a.zal-b.zal||a.n-b.n);
     for (const b of L){
-      const r=rowData(b), ph=photosOf(b.id).filter(p=>!p.noBlob).sort((a,b)=>a.t-b.t);
+      const r=rowData(b), ph=photosOf(b.id).filter(p=>!p.noBlob).sort((a,b)=>pdate(a)-pdate(b));
       const dir=`Залежь ${b.zal}/${safeName(b.name)}`; const imgs=[];
       const used=new Set();
       for (const p of ph){ const bl=await dbGet('blobs',p.id); if(!bl) continue;
-        const d=new Date(p.taken||p.t); let fn=safeName(`${dstr(d)} ${pad(d.getHours())}-${pad(d.getMinutes())} ${p.cat.v}${p.note.v?' - '+p.note.v:''} (${p.by})`);
+        const d=new Date(pdate(p)); let fn=safeName(`${dstr(d)} ${pad(d.getHours())}-${pad(d.getMinutes())} ${p.cat.v}${p.note.v?' - '+p.note.v:''} (${p.by})`);
         let f2=fn, i=2; while(used.has(f2)) f2=fn+' ('+(i++)+')'; used.add(f2);
-        ents.push({name:`${root}/${dir}/${f2}.jpg`, blob:bl, crc:p.crc, date:d}); imgs.push({src:`${dir}/${f2}.jpg`, cap:`${fmtDT(p.taken||p.t)} · ${p.cat.v}${p.note.v?' · '+p.note.v:''} · ${p.by}`}); }
+        ents.push({name:`${root}/${dir}/${f2}.jpg`, blob:bl, crc:p.crc, date:d}); imgs.push({src:`${dir}/${f2}.jpg`, cap:`${fmtDT(pdate(p))} · ${p.cat.v}${p.note.v?' · '+p.note.v:''} · ${p.by}`}); }
       const items = id => (id===TUZ?TUZ:TURR).map(a=>{ const v=fv(b.id,'f:'+a[0]); const n=need(b,a[0]); const cv=a[4]?fv(b.id,'f:'+a[4]):undefined;
         return `<tr><td>${esc(a[1])}</td><td class=c>${n||'—'}</td><td class="c ${v===undefined?'':v>=n?'ok':'bad'}">${v??''}</td><td class="c ${cv===0?'bad':''}">${a[4]?({1:'есть',0:'нет'}[cv]||''):''}</td></tr>`; }).join('');
       const txt=[`${b.name}`,`Залежь: ${b.zal}`,`Извлечено: ${r.extr!=null?fmtNum(r.extr)+'%':r.extr_txt}`,`H2SO4: ${fmtNum(r.acid)} т`,`Программа залита: ${r.prog}`,`Последний обход: ${fmtD(r.last)} ${r.by}`,
@@ -776,6 +838,10 @@ document.addEventListener('click', async e=>{
     case 'inc': { const v=fv(id,'f:'+k); setField(id,'f:'+k, Math.min(20,(v??0)+1)); refreshBlockParts(id,k); break; }
     case 'dec': { const v=fv(id,'f:'+k); if (v===undefined) break; if (v===0) clearField(id,'f:'+k); else setField(id,'f:'+k,v-1); refreshBlockParts(id,k); break; }
     case 'q0': setField(id,'f:'+k,0); refreshBlockParts(id,k); break;
+    case 'editneed': S.editNeed=!S.editNeed; render(); break;
+    case 'ninc': setField(id,'n:'+k, Math.min(20, need(b,k)+1)); refreshBlockParts(id,k); break;
+    case 'ndec': setField(id,'n:'+k, Math.max(0, need(b,k)-1)); refreshBlockParts(id,k); break;
+    case 'nreset': if (fv(id,'n:'+k)!==undefined){ setField(id,'n:'+k,null); refreshBlockParts(id,k); toast('Вернул по умолчанию: '+baseNeed(b,k)); } break;
     case 'cab': { const v=Number(t.dataset.v); if (fv(id,'f:'+k)===v) clearField(id,'f:'+k); else setField(id,'f:'+k,v); if(CABLE_OF[k]) refreshBlockParts(id,CABLE_OF[k]); else render(); break; }
     case 'set': { const v=t.dataset.v; if (fv(id,k)===v) clearField(id,k); else setField(id,k,v); render(); break; }
     case 'visit': ensureVisit(id); await saveState(id); toast('Обход отмечен: '+fmtD(dstr())); render(); break;
@@ -810,7 +876,8 @@ document.addEventListener('change', e=>{
   const t=e.target;
   if (t.id==='zal'){ S.zal=t.value; render(); }
   if (t.id==='sort'){ S.sort=t.value; render(); }
-  if (t.id==='fCam' || t.id==='fGal') addPhotos([...t.files]);
+  if (t.id==='fCam') addPhotos([...t.files],'cam');
+  if (t.id==='fGal') addPhotos([...t.files],'gal');
   if (t.id==='fImp') importFiles([...t.files]);
 });
 $('#bBack').onclick=()=>{ if(history.length>1) history.back(); else go(''); };
