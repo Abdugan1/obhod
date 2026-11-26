@@ -204,7 +204,7 @@ tr:hover td{background:var(--pri2)}
 <input type="file" id="fImp" accept=".zip,application/zip,application/x-zip-compressed,.json,application/json" multiple hidden>
 <script>
 {
-const APP_VER = '1.12';
+const APP_VER = '1.13';
 const SOLO = !!document.getElementById('startData');   // офлайн-файл «только для себя» со встроенным стартовым пакетом
 // ---------------- чек-лист ----------------
 const TUZ = [
@@ -379,7 +379,18 @@ function lastDataDay(id){ let m=''; const s=st(id);
   for (const k in s.f){ const f=s.f[k]; if (DATA_SKIP(k) || f.d==='base' || !f.t || f.t<1e12) continue; const d=dstr(f.t); if (d>m) m=d; }
   for (const it of Object.values(s.inv||{})) for (const k in it.f){ const f=it.f[k]; if (f.d==='base' || f.t<1e12) continue; const d=dstr(f.t); if (d>m) m=d; }
   return m; }
-function needFill(id){ const ph=photosOf(id); if(!ph.length) return 0; const ld=lastDataDay(id); return ph.filter(p=>dstr(p.t)>ld).length; }
+// «Заполнить»: на блоке есть фото, а данные после них не внесены или внесены не полностью.
+// Убирается, когда всё заполнено или нажато «всё заполнено».
+const plural=(n,a,b,c)=>{ const m=n%10, h=n%100; return m===1&&h!==11?a : m>=2&&m<=4&&(h<12||h>14)?b : c; };
+function fillLeft(id){ return applicable(id).filter(k=>fv(id,'f:'+k)===undefined).length + (fv(id,'turr_need')?0:1); }
+function fillInfo(id){ const ph=photosOf(id); if(!ph.length) return null;
+  const lastPh=ph.reduce((m,p)=>{ const d=dstr(p.t); return d>m?d:m; },'');
+  const fr=st(id).f.filled; if (fr && fr.v && dstr(fr.t)>=lastPh) return null;
+  const ld=lastDataDay(id), newer=ph.filter(p=>dstr(p.t)>ld).length;
+  if (newer) return {n:newer, t:`Есть ${newer} фото без отметок — заполните данные по фото.`};
+  const left=fillLeft(id); if (left) return {n:left, t:`Есть фото, но данные заполнены не все: осталось ${left} ${plural(left,'пункт','пункта','пунктов')}.`};
+  return null; }
+const needFill = id => { const f=fillInfo(id); return f ? f.n : 0; };
 const progFilled = id => ['prog_tuz_site','prog_tuz_scada','prog_turr_site','prog_turr_scada'].filter(k=>progVal(id,k)!==undefined).length/4;
 const homeMode = () => S.set.homeMode || 'hw';
 const hiExtr = b => b.extr!=null && b.extr>=89.5;
@@ -483,7 +494,7 @@ function homeHTML(sel){
   const stats = md==='both'
     ? `<div class="stat"><b>${all.length}</b><span>всего</span></div><div class="stat ok"><b>${ch.done}</b><span>оборуд.</span></div><div class="stat ok"><b>${cp.done}</b><span>программа</span></div><div class="stat"><b>${both}</b><span>оба</span></div>`
     : (c => `<div class="stat"><b>${all.length}</b><span>всего</span></div><div class="stat ok"><b>${c.done}</b><span>${md==='prog'?'проверено':'обойдено'}</span></div><div class="stat warn"><b>${c.stale}</b><span>давно</span></div><div class="stat"><b>${c.none}</b><span>осталось</span></div>`)(md==='prog'?cp:ch);
-  return `${todo?`<button class="todo" data-act="flt" data-k="todo"><b>Заполнить данные: ${todo} ${todo===1?'блок':todo<5?'блока':'блоков'}</b><span>есть фото, но отметок после них не было</span></button>`:''}
+  return `${todo?`<button class="todo" data-act="flt" data-k="todo"><b>Заполнить данные: ${todo} ${todo===1?'блок':todo<5?'блока':'блоков'}</b><span>есть фото, но данные заполнены не полностью</span></button>`:''}
   <div class="seg mode" role="tablist">${[['hw','Оборудование'],['prog','Программа'],['both','Оба']].map(([k,t])=>`<button class="${md===k?'on':''}" data-act="hmode" data-k="${k}">${t}</button>`).join('')}</div>
   <div class="stats">${stats}</div>
   <div class="search"><input type="search" id="q" placeholder="Поиск: 166, 8-5…" value="${esc(S.q)}" inputmode="search">
@@ -557,12 +568,12 @@ const needHint = () => S.editNeed ? '<div class="short" style="background:var(--
 function lastvHTML(id){ const lv=lastVisit(id); return lv ? 'Обход оборудования: <b>'+fmtD(lv.d)+'</b>, '+esc(lv.by) : '<span class="mute">Оборудование ещё не обходили</span>'; }
 function lastpHTML(id){ const lv=lastVisit(id,'prog'); return lv ? 'Программа проверена: <b>'+fmtD(lv.d)+'</b>, '+esc(lv.by) : '<span class="mute">Программу ещё не проверяли</span>'; }
 function summaryHTML(id){
-  const g=gaps(id), sh=g.bad, p=progress(id), nf=needFill(id);
+  const g=gaps(id), sh=g.bad, p=progress(id), fi=fillInfo(id), nf=fi?fi.n:0;
   const done = p>=0.999;
   return `<div class="row2 small"><span class="b">Заполнено ${Math.round(p*100)}%</span><div class="prog" style="flex:1;margin:0"><i style="width:${Math.round(p*100)}%"></i></div></div>`+
    (sh.length ? `<div class="short"><b>Не хватает:</b> ${esc(sh.join('; '))}</div>` : (done ? '<div class="okbox">Всё необходимое есть</div>' : ''))+
    (g.want.length ? `<div class="want"><b>Желательно:</b> ${esc(g.want.join('; '))}</div>` : '')+
-   (nf ? `<div class="todo2"><span>Есть ${nf} фото без отметок — заполните данные по фото.</span><button class="vbtn" data-act="filled" data-id="${esc(id)}">${ICON.check} всё заполнено</button></div>` : '');
+   (nf ? `<div class="todo2"><span>${fi.t}</span><button class="vbtn" data-act="filled" data-id="${esc(id)}">${ICON.check} всё заполнено</button></div>` : '');
 }
 function blockHTML(id){
   const b=S.blocks.get(id), lv=lastVisit(id), acid=b.acid||0;
