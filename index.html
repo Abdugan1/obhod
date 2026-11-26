@@ -59,6 +59,13 @@ textarea{min-height:70px;resize:vertical}
 .blk .meta{font-size:13px;color:var(--mute);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
 .red{color:var(--bad);font-weight:700}
 .pill{font-size:12px;font-weight:700;padding:3px 8px;border-radius:10px;white-space:nowrap;background:var(--chip);color:var(--mute)}
+.fillbar{position:sticky;top:var(--barh,60px);z-index:15;background:var(--card,#fff);border:1px solid var(--line);border-radius:14px;padding:8px;margin:0 0 10px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.fl-big{position:relative;margin-bottom:6px}.fl-big img{display:block;width:100%;height:27vh;object-fit:contain;background:#111;border-radius:10px;cursor:zoom-in}
+.fl-big span{display:block;font-size:12px;color:var(--mute);margin-top:3px}.fl-x{position:absolute;top:6px;right:6px;width:34px;height:34px;border-radius:17px;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:16px}
+.fl-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}.fl-strip button{flex:none;width:74px;border:2px solid transparent;border-radius:9px;padding:0;background:none;text-align:center}
+.fl-strip button.on{border-color:var(--pri)}.fl-strip img,.fl-strip .nob{width:70px;height:52px;object-fit:cover;border-radius:7px;display:block;background:var(--chip);font-size:11px}.fl-strip span{font-size:10px;color:var(--mute);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fl-h{font-weight:700;font-size:14px;margin:6px 0 4px;display:flex;align-items:center;justify-content:space-between;gap:6px}.fl-b{display:flex;gap:6px}.fl-b .btn{min-height:32px;padding:4px 10px}.fl-b .btn svg{width:15px;height:15px}.fl-h.ok{color:var(--ok)}.fl-ch{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}.fl-ch .chip{flex:none;white-space:nowrap}
+@keyframes flash{0%{background:var(--warnbg,#fff3cd)}100%{background:transparent}}.flash{animation:flash 1.6s ease-out}
 .rv{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)}.rv:first-of-type{border-top:0}
 .rvl{flex:1;min-width:0;word-break:break-word}.rvb{display:flex;gap:6px;flex:none}.rvb .btn{min-width:44px;min-height:40px;padding:6px 10px}.rvb .btn svg{width:18px;height:18px}
 .rvh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}.btn.sm{min-height:34px;padding:6px 10px;font-size:13px}
@@ -204,7 +211,7 @@ tr:hover td{background:var(--pri2)}
 <input type="file" id="fImp" accept=".zip,application/zip,application/x-zip-compressed,.json,application/json" multiple hidden>
 <script>
 {
-const APP_VER = '1.13';
+const APP_VER = '1.14';
 const SOLO = !!document.getElementById('startData');   // офлайн-файл «только для себя» со встроенным стартовым пакетом
 // ---------------- чек-лист ----------------
 const TUZ = [
@@ -426,7 +433,7 @@ function render(){
       v.innerHTML = '<div class="split"><div class="left">'+homeHTML(r.id)+'</div><div class="right">'+(r.v==='block'?blockHTML(r.id):'<div class="card empty">Выберите блок слева</div>')+'</div></div>';
     } else if (r.v==='block'){ $('#title').textContent=S.blocks.get(r.id).name; v.innerHTML=blockHTML(r.id); }
     else { $('#title').textContent='Обход блоков'; v.innerHTML=homeHTML(); }
-    if (r.v==='block') loadThumbs(r.id);
+    if (r.v==='block'){ loadThumbs(r.id); loadFull(); const bh=$('.bar'); if(bh) document.documentElement.style.setProperty('--barh', bh.offsetHeight+'px'); }
     return;
   }
   if (r.v==='sync'){ $('#title').textContent='Синхронизация'; v.innerHTML=syncHTML(); return; }
@@ -528,6 +535,7 @@ function segHTML(act, id, k, opts, cur, noVal){
   return `<div class="seg">${opts.map(o=>`<button class="${cur===o?'on':''} ${cur===o&&o===noVal?'no':''}" data-act="${act}" data-id="${esc(id)}" data-k="${k}" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
 }
 function itemHTML(id, b, k){
+  if (fillOn(id) && (S.fill.hide.has(k) || (TURR_K.has(k) && !turrNeeded(id)))) return '';
   const it=ITEM[k], v=fv(id,'f:'+k), n=need(b,k), old=(b.old||{})[k];
   const def=baseNeed(b,k), own=fv(id,'n:'+k)!==undefined;
   const lbl=`${it.crit?'<span class="dot">●&nbsp;</span>':''}${esc(it.lb)}`;
@@ -573,15 +581,39 @@ function summaryHTML(id){
   return `<div class="row2 small"><span class="b">Заполнено ${Math.round(p*100)}%</span><div class="prog" style="flex:1;margin:0"><i style="width:${Math.round(p*100)}%"></i></div></div>`+
    (sh.length ? `<div class="short"><b>Не хватает:</b> ${esc(sh.join('; '))}</div>` : (done ? '<div class="okbox">Всё необходимое есть</div>' : ''))+
    (g.want.length ? `<div class="want"><b>Желательно:</b> ${esc(g.want.join('; '))}</div>` : '')+
-   (nf ? `<div class="todo2"><span>${fi.t}</span><button class="vbtn" data-act="filled" data-id="${esc(id)}">${ICON.check} всё заполнено</button></div>` : '');
+   (nf && !fillOn(id) ? `<div class="todo2"><span>${fi.t}</span><span class="row2"><button class="vbtn" data-act="fenter" data-id="${esc(id)}">${ICON.img} Заполнить по фото</button><button class="vbtn" data-act="filled" data-id="${esc(id)}">${ICON.check} всё заполнено</button></span></div>` : '');
 }
+// ---------------- режим «Заполнить по фото» ----------------
+// Сверху закреплена лента фото блока (нажатое фото — крупно), под ней — что осталось заполнить.
+// Строки, заполненные до входа в режим, скрыты; то, что заполняете сейчас, остаётся на месте до выхода.
+const TURR_K = new Set(TURR.map(a=>a[0]));
+const fillOn = id => !!(S.fill && S.fill.id===id);
+function rowDone(id,k){ const it=ITEM[k];
+  if (offReason(id,k) || need(S.blocks.get(id),k)===0) return true;
+  if (fv(id,'f:'+k)===undefined) return false;
+  return !it.cab || !!offCab(id,it.cab) || fv(id,'f:'+it.cab)!==undefined; }
+function enterFill(id){ const hide=new Set(); for (const k in ITEM) if (rowDone(id,k)) hide.add(k);
+  const ph=photosOf(id); S.fill={id, hide, pid: ph.length ? ph[0].id : null}; }
+function leftKeys(id){ const L=applicable(id).filter(k=>fv(id,'f:'+k)===undefined); if(!fv(id,'turr_need')) L.push('turr_need'); return L; }
+const leftLabel = k => k==='turr_need' ? 'ШУ в ТУРР необходим?' : k==='L_cab' ? 'Кабель ТУРР – ТУЗ' : CABLE_OF[k] ? 'Кабель: '+ITEM[CABLE_OF[k]].lb : ITEM[k] ? (ITEM[k].sec==='ТУРР'?'ТУРР: ':'')+ITEM[k].lb : fieldLabel('f:'+k);
+function fillLeftHTML(id){ const L=leftKeys(id);
+  const btns=`<span class="fl-b"><button class="btn sm pri" data-act="filled" data-id="${esc(id)}">${ICON.check} Готово</button><button class="btn sm" data-act="fexit">Выйти</button></span>`;
+  return L.length ? `<div class="fl-h">Осталось: ${L.length}${btns}</div><div class="fl-ch">${L.map(k=>`<button class="chip" data-act="fgo" data-k="${esc(k)}">${esc(leftLabel(k))}</button>`).join('')}</div>`
+    : `<div class="fl-h ok">Всё заполнено${btns}</div>`; }
+function fillBarHTML(id){ const ph=photosOf(id), cur=S.fill.pid && S.photos.get(S.fill.pid);
+  return `<div class="fillbar" id="fillbar">
+   ${cur ? `<div class="fl-big"><img data-full="${esc(cur.id)}" alt="Фото" data-act="pview" data-pid="${esc(cur.id)}"><span>${esc(catOf(cur))} · ${fmtD(dstr(pdate(cur)))} · нажмите — во весь экран</span><button class="fl-x" data-act="fpic" data-k="" aria-label="Скрыть фото">✕</button></div>` : ''}
+   ${ph.length ? `<div class="fl-strip">${ph.map(p=>`<button class="${S.fill.pid===p.id?'on':''}" data-act="fpic" data-k="${esc(p.id)}">${p.noBlob?'<div class="nob">нет</div>':`<img alt="" data-thumb="${esc(p.id)}">`}<span>${esc(catOf(p))}</span></button>`).join('')}</div>` : '<div class="small mute">Фото нет</div>'}
+   <div id="fillleft">${fillLeftHTML(id)}</div></div>`; }
+async function loadFull(){ for (const img of document.querySelectorAll('img[data-full]')){ const bl=await dbGet('blobs',img.dataset.full); if(!bl) continue; const u=URL.createObjectURL(bl); img.onload=()=>URL.revokeObjectURL(u); img.src=u; } }
+const secRows = (id,b,L) => { const h=L.map(a=>itemHTML(id,b,a[0])).join(''); return h || (fillOn(id) && !(L===TURR && !turrNeeded(id)) ? '<div class="small mute">Здесь всё заполнено</div>' : ''); };
 function blockHTML(id){
   const b=S.blocks.get(id), lv=lastVisit(id), acid=b.acid||0;
   const ver=fv(id,'plc_ver'), ok=plcOk(ver), model=fv(id,'plc_model');
   const tn=fv(id,'turr_need'), link=fv(id,'f:L_cab');
   const vers=plcVersions();
   const ph=photosOf(id);
-  return `<div class="card">
+  return `${fillOn(id)?fillBarHTML(id):''}<div class="card">
   <div class="bhead"><h2>${esc(b.name)}</h2><div class="extr ${hiExtr(b)?'hi':''}"><small>извлечено</small><b>${b.extr!=null?fmtNum(b.extr)+'%':esc(b.extr_txt||'—')}</b></div></div>
   <div class="info"><div><small>Залежь</small><b>${esc(b.zal)}</b></div><div><small>Запуск</small><b>${esc(fmtD(b.launch).replace(/\.(\d\d)(\d\d)$/,'.$2'))}</b></div>
    <div><small>Отк. скв.</small><b>${esc(b.otk)}</b></div><div><small>Зак. скв.</small><b>${esc(b.zak)}</b></div>
@@ -598,16 +630,16 @@ function blockHTML(id){
 
   <div class="card" id="sum">${summaryHTML(id)}</div>
 
-  <div class="card"><div class="sech"><div class="sec">ТУЗ</div>${needBtn()}</div>${needHint()}${fv(id,'f:T_exist')===0?'<div class="want" style="margin:0 0 6px">ТУЗ нет — остальное заполнять не нужно.</div>':fv(id,'f:T_cab')===0?'<div class="want" style="margin:0 0 6px">Шкафа нет — содержимое шкафа не заполняется.</div>':''}${TUZ.map(a=>itemHTML(id,b,a[0])).join('')}</div>
-  <div class="card"><div class="sech"><div class="sec">ДАТЧИКИ ДАВЛЕНИЯ</div></div>${SENS.map(a=>itemHTML(id,b,a[0])).join('')}</div>
+  <div class="card"><div class="sech"><div class="sec">ТУЗ</div>${needBtn()}</div>${needHint()}${fv(id,'f:T_exist')===0?'<div class="want" style="margin:0 0 6px">ТУЗ нет — остальное заполнять не нужно.</div>':fv(id,'f:T_cab')===0?'<div class="want" style="margin:0 0 6px">Шкафа нет — содержимое шкафа не заполняется.</div>':''}${secRows(id,b,TUZ)}</div>
+  <div class="card"><div class="sech"><div class="sec">ДАТЧИКИ ДАВЛЕНИЯ</div></div>${secRows(id,b,SENS)}</div>
 
   <div class="card"><div class="sec">СВЯЗЬ С ТУРР</div>
-   ${tn==='да'?`<div class="fld"><span class="l">Кабель ТУРР – ТУЗ</span><span class="small mute">не нужен — в ТУРР свой ШУ</span></div>`:`<div class="fld"><span class="l">Кабель ТУРР – ТУЗ</span><div class="seg">${[[1,'есть'],[0,'нет']].map(([x,t])=>`<button class="${link===x?'on':''} ${link===x&&x===0?'no':''}" data-act="cab" data-id="${esc(id)}" data-k="L_cab" data-v="${x}">${t}</button>`).join('')}</div>
+   ${tn==='да'?`<div class="fld"><span class="l">Кабель ТУРР – ТУЗ</span><span class="small mute">не нужен — в ТУРР свой ШУ</span></div>`:`<div class="fld" id="it-L_cab"><span class="l">Кабель ТУРР – ТУЗ</span><div class="seg">${[[1,'есть'],[0,'нет']].map(([x,t])=>`<button class="${link===x?'on':''} ${link===x&&x===0?'no':''}" data-act="cab" data-id="${esc(id)}" data-k="L_cab" data-v="${x}">${t}</button>`).join('')}</div>
     ${b.oldLink?`<span class="small mute" style="width:100%">ранее: ${esc(b.oldLink)}</span>`:''}</div>`}
    <div class="fld"><label for="dist">Расстояние ТУЗ – ТУРР, м</label><input type="number" id="dist" inputmode="numeric" data-inp="dist" data-num="1" data-id="${esc(id)}" value="${esc(fv(id,'dist')??'')}" style="max-width:120px"></div>
-   <div class="fld"><span class="l">ШУ в ТУРР необходим?</span>${segHTML('set',id,'turr_need',['да','нет'],tn)}</div></div>
+   <div class="fld" id="it-turr_need"><span class="l">ШУ в ТУРР необходим?</span>${segHTML('set',id,'turr_need',['да','нет'],tn)}</div></div>
 
-  <div class="card ${tn==='да'?'':'off'}" id="turr"><div class="sech"><div class="sec">ТУРР ${tn==='да'?'':'— заполняется, если ШУ в ТУРР необходим'}</div>${tn==='да'?needBtn():''}</div>${tn==='да'?needHint():''}${tn==='да'&&fv(id,'f:R_cab')===0?'<div class="want" style="margin:0 0 6px">Шкафа в ТУРР нет — содержимое не заполняется.</div>':''}${TURR.map(a=>itemHTML(id,b,a[0])).join('')}</div>
+  <div class="card ${tn==='да'?'':'off'}" id="turr"><div class="sech"><div class="sec">ТУРР ${tn==='да'?'':'— заполняется, если ШУ в ТУРР необходим'}</div>${tn==='да'?needBtn():''}</div>${tn==='да'?needHint():''}${tn==='да'&&fv(id,'f:R_cab')===0?'<div class="want" style="margin:0 0 6px">Шкафа в ТУРР нет — содержимое не заполняется.</div>':''}${secRows(id,b,TURR)}</div>
 
   ${S.admin?`<div class="card"><button class="btn wide" data-act="inv" data-id="${esc(id)}" style="justify-content:space-between"><span>Состав шкафа</span><span class="mute small">ТУЗ ${invItems(id,'ТУЗ').length} · ТУРР ${invItems(id,'ТУРР').length} поз. ›</span></button></div>`:''}
   <div class="card"><div class="sec">РАСХОДОМЕРЫ</div>
@@ -669,6 +701,7 @@ function refreshBlockParts(id, k){
   const b=S.blocks.get(id);
   if (k && ITEM[k]){ const el=document.getElementById('it-'+k); if(el) el.outerHTML=itemHTML(id,b,k); }
   const sum=$('#sum'); if(sum) sum.innerHTML=summaryHTML(id);
+  const fl=$('#fillleft'); if(fl) fl.innerHTML=fillLeftHTML(id);
   const lvEl=$('#lastv'); if(lvEl) lvEl.innerHTML=lastvHTML(id);
   const lpEl=$('#lastp'); if(lpEl) lpEl.innerHTML=lastpHTML(id);
   const hb=$('#histbox'); if(hb) hb.innerHTML=historyHTML(id);
@@ -1701,7 +1734,11 @@ document.addEventListener('click', async e=>{
   const a=t.dataset.act, id=t.dataset.id, k=t.dataset.k;
   const b = id && id!==G ? S.blocks.get(id) : null;
   switch(a){
-    case 'open': go('b-'+encodeURIComponent(id)); break;
+    case 'open': if (S.filter==='todo') enterFill(id); else if (S.fill && S.fill.id!==id) S.fill=null; go('b-'+encodeURIComponent(id)); break;
+    case 'fenter': enterFill(id); render(); scrollTo(0,0); break;
+    case 'fexit': S.fill=null; render(); break;
+    case 'fpic': if(S.fill){ S.fill.pid=k||null; const fb=$('#fillbar'); if(fb){ fb.outerHTML=fillBarHTML(S.fill.id); loadThumbs(); loadFull(); } } break;
+    case 'fgo': { const el=document.getElementById('it-'+(CABLE_OF[k]||k)); if(el){ const fb=$('#fillbar'), off=(fb?fb.offsetHeight:0)+(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--barh'))||60)+8; scrollTo({top:el.getBoundingClientRect().top+scrollY-off, behavior:'smooth'}); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); } break; }
     case 'flt': S.filter=k; render(); break;
     case 'wmset': S.set.wm = t.dataset.v!=='выкл'; saveSet(); render(); break;
     case 'hmode': S.set.homeMode=k; S.filter='all'; saveSet(); render(); break;
@@ -1736,7 +1773,7 @@ document.addEventListener('click', async e=>{
     case 'cab': { const v=Number(t.dataset.v); if (fv(id,'f:'+k)===v) clearField(id,'f:'+k); else setField(id,'f:'+k,v); if(PARENT(k)) refreshBlockParts(id,PARENT(k)); else render(); break; }
     case 'set': { const v=t.dataset.v; if (fv(id,k)===v) clearField(id,k); else setField(id,k,v); render(); break; }
     case 'visit': ensureVisit(id); await saveState(id); toast('Обход оборудования отмечен: '+fmtD(dstr())); render(); break;
-    case 'filled': setField(id,'filled',Date.now()); refreshBlockParts(id); if (wide()) render(); toast('Отмечено: данные заполнены'); break;
+    case 'filled': setField(id,'filled',Date.now()); if (fillOn(id)){ S.fill=null; render(); } refreshBlockParts(id); if (wide()) render(); toast('Отмечено: данные заполнены'); break;
     case 'pvisit': ensureVisit(id,'prog'); await saveState(id); toast('Проверка программы отмечена: '+fmtD(dstr())); render(); break;
     case 'vdel': { const v=st(id).visits.find(x=>x.id===k); if(!v) break; if(await confirmBox(`Удалить отметку «${vKind(v)==='prog'?'программа':'оборудование'}» от ${fmtD(v.d)} (${v.by})?`,'Удалить')){ v.del=Date.now(); await saveState(id); admSignVisit(id,v); render(); } break; }
     case 'phcat': S.phCat=k; if (k!=='Все'){ S.set.curCat=k; saveSet(); } { const r=route(); const pc=$('#phcard'); if(pc && r.id){ pc.innerHTML=photoCardHTML(r.id); loadThumbs(); } } break;
