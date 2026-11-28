@@ -215,7 +215,7 @@ tr:hover td{background:var(--pri2)}
 <input type="file" id="fImp" accept=".zip,application/zip,application/x-zip-compressed,.json,application/json" multiple hidden>
 <script>
 {
-const APP_VER = '1.17';
+const APP_VER = '1.19';
 const SOLO = !!document.getElementById('startData');   // офлайн-файл «только для себя» со встроенным стартовым пакетом
 // ---------------- чек-лист ----------------
 const TUZ = [
@@ -226,7 +226,7 @@ const TUZ = [
  ['T_sw','Свитч / хаб',1,0],['T_poe','PoE-инжектор',1,1],['T_hmi','Панель оператора',1,1]];
 const TURR = [
  ['R_cab','ШУ в ТУРР',1,1],['R_mast','Мачта',1,1],['R_ant','Антенна',1,1,'R_antc'],['R_poe','PoE-инжектор',1,1],
- ['R_pow','Питание ШУ',1,1],['R_psu','Блок питания 24В',1,1],['R_ups','ИБП 220В',1,0],
+ ['R_pow','Питание ШУ',1,1],['R_psu','Блок питания 24В',1,1],['R_ups','ИБП 220В',1,0],['R_ups24','ИБП 24В',0,0],['R_bat24','Аккумулятор 24В',0,0],
  ['R_rs','Модуль RS-485',1,1],['R_rscon','Коннектор RS-485',1,1],['R_plc','ПЛК',1,1],['R_ai','Модуль AI',1,0],
  ['R_sw','Свитч / хаб',1,0],['R_hmi','Панель управления',1,0]];
 // датчики давления — отдельный раздел: могут быть подключены и к ТУЗ, и к ТУРР
@@ -241,6 +241,8 @@ const CABLE_OF = {}; for (const k in ITEM) if (ITEM[k].cab) CABLE_OF[ITEM[k].cab
 const MINQ = {T_rs:1, T_rscon:1, T_ai:1, T_ao:1, R_rs:1, R_rscon:1, R_ai:1};
 const OPT = new Set(['T_ddv','R_dd','T_ups220','R_ups']);
 const upsAlt = id => fv(id,'f:T_ups24')>=1 || fv(id,'f:T_bat24')>=1;
+const upsAltR = id => fv(id,'f:R_ups24')>=1 || fv(id,'f:R_bat24')>=1;
+const upsCovered = (id,k) => false;   // ИБП 220В, ИБП 24В и аккумулятор учитываются отдельно, друг друга не заменяют
 const PLACE = {T_ddk:'T_ddk_pl', T_ddv:'T_ddv_pl', R_dd:'R_dd_pl'};
 const PLACE_OF = {}; for (const k in PLACE) PLACE_OF[PLACE[k]] = k;
 const PARENT = k => CABLE_OF[k] || PLACE_OF[k];
@@ -368,7 +370,7 @@ function gaps(id){
   for (const k of applicable(id)){
     const v=fv(id,'f:'+k); if (v===undefined) continue;
     const n = k==='L_cab' ? 1 : need(b,k); if (v>=n) continue;
-    if (k==='T_ups220' && upsAlt(id)) continue;
+    if (upsCovered(id,k)) continue;
     const par=CABLE_OF[k], sec=(ITEM[k]||ITEM[par]||{}).sec;
     let lb = k==='L_cab' ? 'Кабель ТУРР–ТУЗ' : (par ? 'кабель: '+ITEM[par].lb : ITEM[k].lb);
     if (sec==='ТУРР') lb='ТУРР: '+lb;
@@ -558,7 +560,7 @@ function itemHTML(id, b, k){
   const off=offReason(id,k);
   if (off) return `<div class="it nn" id="it-${k}"><div class="r"><div class="lb">${lbl}<small>не заполняется — ${esc(off)}</small></div></div></div>`;
   if (!n && own) return `<div class="it nn" id="it-${k}"><div class="r"><div class="lb">${lbl}<small>не нужно на этом блоке${v!==undefined?' · стоит: '+v:''}</small></div></div></div>`;
-  const cls = v===undefined ? 'na' : !n ? (v>0?'ok':'na') : (v>=n || (k==='T_ups220' && upsAlt(id)) ? 'ok' : (OPT.has(k) || v>=minOf(b,k)) ? 'mid' : 'bad');
+  const cls = v===undefined ? 'na' : !n ? (v>0?'ok':'na') : (v>=n || upsCovered(id,k) ? 'ok' : (OPT.has(k) || v>=minOf(b,k)) ? 'mid' : 'bad');
   let cab='';
   if (SENS_DEF[k]){ const to=fv(id,'dd_to_'+k)||SENS_DEF[k];
     cab+=`<div class="cab">Подключён к: <div class="seg">${['ТУЗ','ТУРР'].map(x=>`<button class="${to===x?'on':''}" data-act="set" data-id="${esc(id)}" data-k="dd_to_${k}" data-v="${x}">${x}</button>`).join('')}</div></div>`; }
@@ -1707,14 +1709,14 @@ async function xlsxBlob(sheetName, sh){
 }
 const GD_TUZ = [['ТУЗ имеется','T_exist'],['ШУ имеется','T_cab'],['ПЛК','T_plc'],['Модуль RS-485','T_rs'],['Модуль AI','T_ai'],['Модуль AO','T_ao'],['Блок питания','T_psu'],['ИБП','UPS'],
   ['Антенна','T_ant'],['PoE','T_poe'],['Свитч / хаб','T_sw'],['Панель','T_hmi'],['Электроклапан','T_valve'],['Датчик давл. кислоты','T_ddk'],['Датчик давл. ВР','T_ddv']];
-const GD_TURR = [['ШУ имеется','R_cab'],['ПЛК','R_plc'],['Модуль RS-485','R_rs'],['Модуль AI','R_ai'],['Блок питания','R_psu'],['ИБП','R_ups'],['Антенна','R_ant'],['PoE','R_poe'],
+const GD_TURR = [['ШУ имеется','R_cab'],['ПЛК','R_plc'],['Модуль RS-485','R_rs'],['Модуль AI','R_ai'],['Блок питания','R_psu'],['ИБП','RUPS'],['Антенна','R_ant'],['PoE','R_poe'],
   ['Свитч / хаб','R_sw'],['Панель','R_hmi'],['Датчик давл. ПР','R_dd']];
 // одна ячейка «что есть»: '' — не проверено, «есть», «нет», «1 из 2», «—» — не нужно / нет ТУЗ
 function gdCell(b, k){
   const id=b.id;
   if (k==='T_exist'){ const v=fv(id,'f:T_exist'); return v===undefined?{v:'',s:8}:v>=1?{v:'есть',s:8}:{v:'нет',s:14}; }
   if ((k.startsWith('T_') || k==='UPS') && fv(id,'f:T_exist')===0) return {v:'—',s:15};
-  if (k==='UPS'){ const a=['T_ups220','T_ups24','T_bat24'].map(x=>fv(id,'f:'+x)).filter(x=>x!==undefined); return !a.length?{v:'',s:8}:Math.max(...a)>=1?{v:'есть',s:8}:{v:'нет',s:14}; }
+  if (k==='UPS' || k==='RUPS'){ const a=(k==='UPS'?['T_ups220','T_ups24','T_bat24']:['R_ups','R_ups24','R_bat24']).map(x=>fv(id,'f:'+x)).filter(x=>x!==undefined); return !a.length?{v:'',s:8}:Math.max(...a)>=1?{v:'есть',s:8}:{v:'нет',s:14}; }
   const n=need(b,k); if (n===0) return {v:'—',s:15};
   const v=fv(id,'f:'+k); if (v===undefined) return {v:'',s:8};
   if (v===0) return {v:'нет',s:14};
